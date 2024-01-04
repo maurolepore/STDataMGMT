@@ -94,13 +94,13 @@ interpolation_groups <- c(
 prepared_data <- prepare_scenario_data(data = weo_geco_data)
 
 
-#NGFS 
+#NGFS Phase IV
 input_path <- r2dii.utils::path_dropbox_2dii(
   "PortCheck",
   "00_Data",
   "01_ProcessedData",
   "03_ScenarioData",
-  glue::glue("ngfs_Scenarios_AnalysisInput_{start_year}.csv")
+  glue::glue("ngfs_Scenarios_AnalysisInput_phase4.csv")
 )
 
 ngfs_data <- readr::read_csv(
@@ -120,7 +120,7 @@ ngfs_data <- readr::read_csv(
 )
 
 preprepared_ngfs_data <- preprepare_ngfs_scenario_data(ngfs_data, 
-                                                       start_year = start_year)
+                                                       start_year= start_year_despite_old_data)
 
 
 preprepared_ngfs_data <- preprepared_ngfs_data %>%
@@ -135,6 +135,7 @@ preprepared_ngfs_data <- style_ngfs(preprepared_ngfs_data)
 # replace nan fair_share_perc by 0. Nans appear when dividing per 0 in the tmsr computation
 preprepared_ngfs_data <- preprepared_ngfs_data %>%
   dplyr::mutate(fair_share_perc = dplyr::if_else(is.na(fair_share_perc), 0, fair_share_perc))
+
 
 ### IPR Scenario
 ### Read IPR

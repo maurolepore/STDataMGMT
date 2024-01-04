@@ -267,17 +267,19 @@ prepare_scenario_data <- function(data) {
 #' @export
 
 preprepare_ngfs_scenario_data <- function(data, start_year) {
-
+  
   data <- data %>%
     dplyr::mutate(scenario = .data$Scenario) %>%
     dplyr::mutate(
       scenario = dplyr::case_when(
         .data$scenario == "Nationally Determined Contributions (NDCs)" ~ "NDC",
-        .data$scenario == "Below 2 C" ~ "B2DS",
+        .data$scenario == "Below 2°C" ~ "B2DS",
         .data$scenario == "Delayed transition" ~ "DT",
         .data$scenario == "Current Policies" ~ "CP",
         .data$scenario == "Divergent Net Zero" ~ "DN0",
         .data$scenario == "Net Zero 2050" ~ "NZ2050",
+        .data$scenario == "Fragmented World" ~ "FW",
+        .data$scenario == "Low demand" ~ "LD",
         TRUE ~ .data$scenario
       ),
       scenario_geography = dplyr::case_when(
@@ -310,24 +312,25 @@ preprepare_ngfs_scenario_data <- function(data, start_year) {
       ),
       source = paste("NGFS", start_year, sep = ""),
       model = dplyr::case_when(
-        .data$Model == "GCAM 5.3+ NGFS" ~ "GCAM",
-        .data$Model == "REMIND-MAgPIE 3.0-4.4" ~ "REMIND",
+        .data$Model == "GCAM 6.0 NGFS" ~ "GCAM",
+        .data$Model == "REMIND-MAgPIE 3.2-4.6" ~ "REMIND",
         .data$Model == "MESSAGEix-GLOBIOM 1.1-M-R12" ~ "MESSAGE",
         TRUE ~ .data$Model
       )
     ) %>%
     dplyr::rename(units = .data$Unit) %>%
+    dplyr::ungroup() %>%  ##think it needs to be ungrouped here
     dplyr::select(-c(.data$Model, .data$Variable, .data$Scenario, .data$category_c, .data$category_a, .data$category_b, .data$Region))
-
-
+  
+  
   combine_renewables_cap <- data %>%
     dplyr::filter(.data$technology == "RenewablesCap") %>%
     dplyr::group_by(.data$year, .data$technology, .data$scenario_geography, .data$model, .data$scenario) %>%
     dplyr::mutate(value = sum(.data$value)) %>%
     unique()
-
+  
   delete_renewables <- data %>% dplyr::filter(!.data$technology == "RenewablesCap")
-
+  
   data <- dplyr::full_join(combine_renewables_cap, delete_renewables) %>%
     tidyr::unite("scenario", c(.data$model, .data$scenario), sep = "_") %>%
     dplyr::mutate(scenario = paste("NGFS2021", .data$scenario, sep = "_"))
