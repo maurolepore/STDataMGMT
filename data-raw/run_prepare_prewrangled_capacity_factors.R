@@ -38,8 +38,8 @@ data <- readr::read_csv(
 ## prepare data
 prepared_data_WEO2021 <- prepare_prewrangled_capacity_factors_WEO2021(data, start_year = start_year)
 
-## read data
-input_path <- file.path("data-raw", "raw_capacity_factors_NGFS2021.csv")
+##NGFS--- read data
+input_path <- file.path("data-raw", "raw_capacity_factors_NGFSphase4.csv")
 
 data <- readr::read_csv(
   input_path,
@@ -59,7 +59,7 @@ data <- readr::read_csv(
 )
 
 ## prepare data
-prepared_data_NGFS2021 <- prepare_capacity_factors_NGFS2021(data, start_year = start_year)
+prepared_data_NGFS2022 <- prepare_capacity_factors_NGFS2022(data, start_year = start_year)
 
 ### IPR data
 
