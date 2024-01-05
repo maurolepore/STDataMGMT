@@ -69,9 +69,9 @@ price_data_long_adjusted_WEO2021 <- prepare_lcoe_adjusted_price_data_weo(
   dplyr::select(-.data$source)
 
 
-# prepare price data NGFS2021----
+# prepare price data NGFS2022----
 ## read input data
-input_path_fossil_fuels_ngfs <- file.path("data-raw", "raw_price_data_long_NGFS2021.csv")
+input_path_fossil_fuels_ngfs <- file.path("data-raw", "raw_price_data_long_NGFSphase4.csv")
 
 input_data_fossil_fuels_ngfs <- readr::read_csv(
   input_path_fossil_fuels_ngfs,
@@ -108,19 +108,19 @@ input_data_lcoe_oxford <- readr::read_delim(
 )
 
 
-price_data_long_NGFS2021 <- prepare_price_data_long_NGFS2021(
+price_data_long_NGFS2022 <- prepare_price_data_long_NGFS2022(
   input_data_fossil_fuels_ngfs = input_data_fossil_fuels_ngfs,
   start_year = start_year
 )
 
-lcoe_adjusted_price_data_oxford2021 <- prepare_lcoe_adjusted_price_data_oxford2021(
+lcoe_adjusted_price_data_oxford2021_2022 <- prepare_lcoe_adjusted_price_data_oxford2022(
   input_data_lcoe_oxford = input_data_lcoe_oxford,
   average_npm_power = average_npm_power,
   start_year = start_year
 )
 
-price_data_long_adjusted_NGFS2021 <- price_data_long_NGFS2021 %>%
-  dplyr::bind_rows(lcoe_adjusted_price_data_oxford2021)
+price_data_long_adjusted_NGFS2022 <- price_data_long_NGFS2022 %>%
+  dplyr::bind_rows(lcoe_adjusted_price_data_oxford2021_2022)
 
 
 ### prepare price data IPR 2021
