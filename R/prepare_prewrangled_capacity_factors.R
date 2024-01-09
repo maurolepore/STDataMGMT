@@ -10,7 +10,7 @@
 #' @return NULL
 
 prepare_prewrangled_capacity_factors_WEO2021 <- function(data, start_year) {
-  # WEO2021 start year should be the release year 
+  # WEO2021 start year should be the release year
   #start_year <- 2021
 
   # WEO2021 end year in raw data is 2040 as it os based on weo2020 at the moment
@@ -252,7 +252,7 @@ prepare_prewrangled_capacity_factors_WEO2021 <- function(data, start_year) {
 #' @return NULL
 
 prepare_capacity_factors_NGFS2022 <- function(data, start_year) {
-  
+
   data <- data %>%
     dplyr::mutate(scenario = .data$Scenario) %>%
     dplyr::mutate(
@@ -293,20 +293,20 @@ prepare_capacity_factors_NGFS2022 <- function(data, start_year) {
       )
     ) %>%
     dplyr::rename(units = .data$Unit) %>%
-    ungroup()%>%
-    dplyr::select(-c(Model, Variable, Scenario, category_b, category_c, Region))
-  
-  
+    dplyr::ungroup()%>%
+    dplyr::select(-c(.data$Model, .data$Variable, .data$Scenario, .data$category_b, .data$category_c, .data$Region))
+
+
   combine_renewables <- data %>%
     dplyr::filter(.data$technology == "RenewablesCap") %>%
     dplyr::group_by(.data$year, .data$technology, .data$scenario_geography, .data$model, .data$scenario, .data$category_a) %>%
     dplyr::mutate(value = sum(.data$value)) %>%
     unique()
-  
+
   delete_renewables <- data %>% dplyr::filter(!.data$technology == "RenewablesCap")
-  
+
   data <- dplyr::full_join(combine_renewables, delete_renewables)
-  
+
   data <- data %>%
     dplyr::group_by(dplyr::across(-c(.data$year, .data$value))) %>%
     tidyr::complete(year = tidyr::full_seq(.data$year, 1)) %>%
@@ -314,9 +314,9 @@ prepare_capacity_factors_NGFS2022 <- function(data, start_year) {
       value = zoo::na.approx(.data$value, .data$year, na.rm = FALSE)
     ) %>%
     dplyr::ungroup()
-  
+
   data <- data %>% dplyr::filter(.data$year >= start_year)
-  
+
   generation <- data %>%
     dplyr::filter(.data$category_a == "Secondary Energy") %>%
     dplyr::mutate(
@@ -328,7 +328,7 @@ prepare_capacity_factors_NGFS2022 <- function(data, start_year) {
       values_from = .data$value
     ) %>%
     dplyr::rename(generation = .data$`Secondary Energy`)
-  
+
   capacity <- data %>%
     dplyr::filter(.data$category_a == "Capacity") %>%
     tidyr::pivot_wider(
@@ -336,14 +336,14 @@ prepare_capacity_factors_NGFS2022 <- function(data, start_year) {
       values_from = .data$value
     ) %>%
     dplyr::rename(capacity = .data$Capacity)
-  
+
   data <- dplyr::full_join(capacity, generation)
-  
+
   data <- data %>%
     dplyr::group_by(dplyr::across(-c(.data$generation, .data$capacity))) %>%
     dplyr::mutate(capacity_factor = as.double(.data$generation) / as.double(.data$capacity)) %>%
     dplyr::ungroup()
-  
+
   data <- data %>%
     # if capacity factor is bigger than 1 make it 1
     dplyr::mutate(
@@ -360,7 +360,7 @@ prepare_capacity_factors_NGFS2022 <- function(data, start_year) {
     # we have clarity on how to best handle this, we assume capacity factor 0
     # in such a a case
     dplyr::mutate(capacity_factor = dplyr::if_else(.data$capacity == 0 & .data$generation == 0, 0, .data$capacity_factor))
-  
+
   data <- data %>%
     dplyr::select(-c(.data$capacity, .data$generation, .data$units)) %>%
     tidyr::unite("scenario", c(.data$model, .data$scenario), sep = "_") %>%
