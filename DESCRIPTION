@@ -11,20 +11,26 @@ Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.2.3
 Imports: 
     assertr,
+    countrycode,
     crayon,
     dplyr,
+    fastDummies,
     fs,
-    ggplot2,
     glue,
     magrittr,
     purrr,
     readr,
     readxl,
     rlang,
-    stringi,
     stringr,
     tibble,
     tidyr,
     zoo
 Suggests: 
+    knitr,
+    rmarkdown,
     testthat (>= 3.0.0)
+LazyData: true
+VignetteBuilder: knitr
+Depends: 
+    R (>= 2.10)
