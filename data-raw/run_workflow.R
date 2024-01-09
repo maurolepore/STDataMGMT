@@ -1,10 +1,9 @@
-start_year <- 2022
+start_year <- 2021
 
 print("=================== RUNNING run_prepare_Scenarios_AnalysisInput_start_year ===================")
 source(fs::path("data-raw", "run_prepare_Scenarios_AnalysisInput_start_year.R"))
 rm(list = ls()[ls() != "start_year"])
 
-start_year <- 2022 # because overwritten in run_prepare_Scenarios_AnalysisInput_start_year.R
 print("=================== RUNNING run_prepare_prewrangled_capacity_factors ===================")
 source(fs::path("data-raw", "run_prepare_prewrangled_capacity_factors.R"))
 rm(list = ls()[ls() != "start_year"])
@@ -28,3 +27,13 @@ rm(list = ls()[ls() != "start_year"])
 print("=================== RUNNING run_prepare_prewrangled_financial_data_stress_test ===================")
 source(fs::path("data-raw", "run_prepare_prewrangled_financial_data_stress_test.R"))
 rm(list = ls()[ls() != "start_year"])
+
+
+# ===== SAVE TO DROPBOX
+
+for (fp in list.files(here::here("data-raw", "st_inputs"))){
+  readr::write_csv(
+    readr::read_csv(here::here("data-raw", "st_inputs", fp)),
+    r2dii.utils::path_dropbox_2dii(fs::path("ST Inputs", "ST_INPUTS_MASTER", fp))
+  )
+}
