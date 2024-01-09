@@ -1,4 +1,4 @@
-start_year <- 2021
+start_year <- 2022
 
 print("=================== RUNNING run_prepare_Scenarios_AnalysisInput_start_year ===================")
 source(fs::path("data-raw", "run_prepare_Scenarios_AnalysisInput_start_year.R"))
