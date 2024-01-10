@@ -273,7 +273,7 @@ preprepare_ngfs_scenario_data <- function(data, start_year) {
     dplyr::mutate(
       scenario = dplyr::case_when(
         .data$scenario == "Nationally Determined Contributions (NDCs)" ~ "NDC",
-        .data$scenario == "Below 2°C" ~ "B2DS",
+        .data$scenario == "Below 2 C" ~ "B2DS",
         .data$scenario == "Delayed transition" ~ "DT",
         .data$scenario == "Current Policies" ~ "CP",
         .data$scenario == "Divergent Net Zero" ~ "DN0",
