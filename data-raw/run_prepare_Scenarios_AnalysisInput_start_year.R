@@ -1,10 +1,7 @@
 devtools::load_all()
 
-#set start_year
-start_year_despite_old_data <- start_year   # defined in workflow.R
-start_year <- 2021 # TODO FIX with start_year // remove start_year from files names
 
-#vector of low carbon technologies 
+#vector of low carbon technologies
 green_techs <- c(
   "FuelCell",
   "Electric",
@@ -33,7 +30,7 @@ interpolation_groups <- c(
  input_path <- fs::path(
    "data-raw",
    "scenario_analysis_input_data",
-   glue::glue("weo_Scenarios_AnalysisInput_{start_year}.csv")
+   "weo_Scenarios_AnalysisInput.csv"
  )
 
  weo_data <- readr::read_csv(
@@ -50,14 +47,14 @@ interpolation_groups <- c(
      value = "d"
    )
  )
- 
-#GECO data from PACTA routine 
+
+#GECO data from PACTA routine
  input_path <- fs::path(
       "data-raw",
    "scenario_analysis_input_data",
-   glue::glue("pacta_processed_geco_Scenarios_AnalysisInput_{start_year}.csv")
+   "pacta_processed_geco_Scenarios_AnalysisInput.csv"
  )
- 
+
  geco_data <- readr::read_csv(
    input_path,
    col_types = readr::cols_only(
@@ -71,30 +68,32 @@ interpolation_groups <- c(
      year = "d",
      value = "d"
    )
- ) 
- 
-# combine WEO with GECO data 
+ )
+
+# combine WEO with GECO data
  weo_geco_data <- rbind(
    weo_data,
    geco_data
  )
- 
+
  weo_geco_data <- weo_geco_data %>%
    interpolate_yearly(!!!rlang::syms(interpolation_groups)) %>%
-   dplyr::filter(year >= start_year_despite_old_data) %>% 
-   add_market_share_columns(start_year_despite_old_data = start_year_despite_old_data) 
- 
+   dplyr::filter(year >= start_year) %>%
+   add_market_share_columns(start_year = start_year)
+
  weo_geco_data <- weo_geco_data %>%
    format_p4i(green_techs)
- 
+
 prepared_data <- prepare_scenario_data(data = weo_geco_data)
 
 
-#NGFS 
-input_path <- fs::path(
-     "data-raw",
-   "scenario_analysis_input_data",
-  glue::glue("ngfs_Scenarios_AnalysisInput_{start_year}.csv")
+#NGFS Phase IV
+input_path <- r2dii.utils::path_dropbox_2dii(
+  "PortCheck",
+  "00_Data",
+  "01_ProcessedData",
+  "03_ScenarioData",
+  "ngfs_Scenarios_AnalysisInput_phase4.csv"
 )
 
 ngfs_data <- readr::read_csv(
@@ -113,14 +112,14 @@ ngfs_data <- readr::read_csv(
   )
 )
 
-preprepared_ngfs_data <- preprepare_ngfs_scenario_data(ngfs_data, 
-                                                       start_year = start_year)
+preprepared_ngfs_data <- preprepare_ngfs_scenario_data(ngfs_data,
+                                                       start_year= start_year)
 
 
 preprepared_ngfs_data <- preprepared_ngfs_data %>%
   interpolate_yearly(!!!rlang::syms(interpolation_groups)) %>%
-  dplyr::filter(year >= start_year_despite_old_data) %>%
-  add_market_share_columns(start_year_despite_old_data = start_year_despite_old_data) 
+  dplyr::filter(year >= start_year) %>%
+  add_market_share_columns(start_year = start_year)
 
 preprepared_ngfs_data <- preprepared_ngfs_data %>% format_p4i(green_techs)
 
@@ -130,13 +129,14 @@ preprepared_ngfs_data <- style_ngfs(preprepared_ngfs_data)
 preprepared_ngfs_data <- preprepared_ngfs_data %>%
   dplyr::mutate(fair_share_perc = dplyr::if_else(is.na(fair_share_perc), 0, fair_share_perc))
 
+
 ### IPR Scenario
 ### Read IPR
 
 input_path <- fs::path(
   "data-raw",
    "scenario_analysis_input_data",
-  glue::glue("ipr_Scenarios_AnalysisInput_{start_year}.csv")
+  "ipr_Scenarios_AnalysisInput.csv"
 )
 
 IPR <- as.data.frame(readr::read_csv(
@@ -154,8 +154,8 @@ IPR <- as.data.frame(readr::read_csv(
   )
 ))
 
-prepared_IPR_data <- prepare_IPR_scenario_data(IPR, 
-                                               start_year_despite_old_data = start_year_despite_old_data)
+prepared_IPR_data <- prepare_IPR_scenario_data(IPR,
+                                               start_year = start_year)
 # IPR baseline scenario
 # IPR baseline is a duplicate of the WEO2021 STEPs scenario
 
@@ -175,7 +175,7 @@ prepared_IPR_data <- prepared_IPR_data %>%
 input_path <- fs::path(
   "data-raw",
    "scenario_analysis_input_data",
-  glue::glue("oxford_Scenarios_AnalysisInput_{start_year}.csv")
+  "oxford_Scenarios_AnalysisInput.csv"
 )
 
 OXF <- as.data.frame(readr::read_csv(
@@ -189,15 +189,15 @@ OXF <- as.data.frame(readr::read_csv(
     value = "d"
   )
 ))
-prepared_OXF_data <- prepare_OXF_scenario_data(OXF, 
-                                               start_year_despite_old_data = start_year_despite_old_data)
+prepared_OXF_data <- prepare_OXF_scenario_data(OXF,
+                                               start_year = start_year)
 
 ### Merge Data from Scenario Sources
 prepared_data_IEA_NGFS <- dplyr::full_join(prepared_data, preprepared_ngfs_data)
 prepared_data_IPR_OXF <- dplyr::full_join(prepared_IPR_data, prepared_OXF_data)
 prepared_data_combined <- dplyr::full_join(prepared_data_IEA_NGFS, prepared_data_IPR_OXF)
 
-prepared_data_combined %>% 
+prepared_data_combined %>%
   dplyr::rename(ald_business_unit=.data$technology) %>%
   readr::write_csv(
   file.path("data-raw", "st_inputs",glue::glue("Scenarios_AnalysisInput_{start_year}.csv"))

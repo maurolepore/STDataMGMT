@@ -54,14 +54,14 @@ common_fs_groups <- function() {
 #' start-year must be provided.
 #'
 #' @param data A scenario dataset.
-#' @param start_year_despite_old_data The baseline year, against which the technology- and
+#' @param start_year The baseline year, against which the technology- and
 #'   sector- market shares will be calculated. Note: At the start year, tmsr = 1
 #'   and smsp =0 respectively.
-#'   
+#'
 #' @return A scenario dataset, with the new columns `tmsr` and `smsp`.
 #'
 #' @export
-add_market_share_columns <- function(data, start_year_despite_old_data) {
+add_market_share_columns <- function(data, start_year) {
   old_groups <- dplyr::groups(data)
   data <- dplyr::ungroup(data)
 
@@ -89,12 +89,12 @@ add_market_share_columns <- function(data, start_year_despite_old_data) {
 check_crucial_names <- function(x, expected_names) {
   stopifnot(rlang::is_named(x))
   stopifnot(is.character(expected_names))
-  
+
   ok <- all(unique(expected_names) %in% names(x))
   if (!ok) {
     abort_missing_names(sort(setdiff(expected_names, names(x))))
   }
-  
+
   invisible(x)
 }
 
@@ -177,9 +177,9 @@ prepare_scenario_data <- function(data) {
       "FairSharePerc"
     ) %in% colnames(data)
   )
- 
+
   stopifnot(data_has_expected_columns)
-  
+
   # due to inconsistencies in the raw data across sources, we need to filter for
   # other Indicators in IEA scenarios than in GECO scenarios at least up until
   # WEO 2021 and GECO 2021. Please review once new scenarios are available
@@ -221,7 +221,7 @@ prepare_scenario_data <- function(data) {
       scenario = stringr::str_c(.data$scenario_source, .data$scenario, sep = "_")
     ) %>%
     dplyr::distinct_all()
-  
+
   # We can only use scenario x scenario_geography combinations that do not have
   # NAs on any not nullable columns. We currently  use STEPS, SDS, APS and NZE_2050, thus for
   # now only affected scenario x scenario_geography combinations in those sectors
@@ -236,21 +236,21 @@ prepare_scenario_data <- function(data) {
     ) %>%
     dplyr::filter_all(dplyr::any_vars(is.na(.))) %>%
     dplyr::distinct(.data$scenario_source, .data$scenario_geography, .data$ald_sector)
-  
+
   data <- data %>%
     dplyr::anti_join(NA_geos, by = c("scenario_source", "scenario_geography", "ald_sector"))
-  
+
   # removing sectors that are not supported by stress testing
   p4i_p4b_sector_technology_lookup_df <- p4i_p4b_sector_technology_lookup()
-  
+
   data <- data %>%
     dplyr::filter(.data$ald_sector %in% unique(p4i_p4b_sector_technology_lookup_df$sector_p4i))
-  
+
   data <- remove_incomplete_sectors(data)
-  
+
   data <- data %>%
     dplyr::select(-.data$scenario_source)
-  
+
   return(data)
 }
 
@@ -261,7 +261,7 @@ prepare_scenario_data <- function(data) {
 #' usual scenario analysis input routine.
 #'
 #' @param data Tibble that contains the scenario data file that is to be
-#' @param start_year 
+#' @param start_year
 #'   processed
 #' @family data preparation functions
 #' @export
@@ -278,6 +278,8 @@ preprepare_ngfs_scenario_data <- function(data, start_year) {
         .data$scenario == "Current Policies" ~ "CP",
         .data$scenario == "Divergent Net Zero" ~ "DN0",
         .data$scenario == "Net Zero 2050" ~ "NZ2050",
+        .data$scenario == "Fragmented World" ~ "FW",
+        .data$scenario == "Low demand" ~ "LD",
         TRUE ~ .data$scenario
       ),
       scenario_geography = dplyr::case_when(
@@ -310,13 +312,14 @@ preprepare_ngfs_scenario_data <- function(data, start_year) {
       ),
       source = paste("NGFS", start_year, sep = ""),
       model = dplyr::case_when(
-        .data$Model == "GCAM 5.3+ NGFS" ~ "GCAM",
-        .data$Model == "REMIND-MAgPIE 3.0-4.4" ~ "REMIND",
+        .data$Model == "GCAM 6.0 NGFS" ~ "GCAM",
+        .data$Model == "REMIND-MAgPIE 3.2-4.6" ~ "REMIND",
         .data$Model == "MESSAGEix-GLOBIOM 1.1-M-R12" ~ "MESSAGE",
         TRUE ~ .data$Model
       )
     ) %>%
     dplyr::rename(units = .data$Unit) %>%
+    dplyr::ungroup() %>%  ##think it needs to be ungrouped here
     dplyr::select(-c(.data$Model, .data$Variable, .data$Scenario, .data$category_c, .data$category_a, .data$category_b, .data$Region))
 
 
@@ -330,7 +333,7 @@ preprepare_ngfs_scenario_data <- function(data, start_year) {
 
   data <- dplyr::full_join(combine_renewables_cap, delete_renewables) %>%
     tidyr::unite("scenario", c(.data$model, .data$scenario), sep = "_") %>%
-    dplyr::mutate(scenario = paste("NGFS2021", .data$scenario, sep = "_"))
+    dplyr::mutate(scenario = paste("NGFS2023", .data$scenario, sep = "_"))
 }
 
 
@@ -351,14 +354,14 @@ style_ngfs <- function(data) {
       year = .data$Year,
       direction = .data$Direction,
       fair_share_perc = .data$FairSharePerc
-    ) 
-  
+    )
+
 }
 
 
 #### IPR Scenario Analysis Function
 #### Prepares Scenario Analysis Input for IPR using the usual routine
-prepare_IPR_scenario_data <- function(data, start_year_despite_old_data) {
+prepare_IPR_scenario_data <- function(data, start_year) {
   ### Creating a technology column
 
   data$technology <- ifelse(data$Sector == "Power", paste(data$Sub_variable_class_2, data$Sector, sep = "_"), data$Sub_variable_class_1)
@@ -445,7 +448,7 @@ prepare_IPR_scenario_data <- function(data, start_year_despite_old_data) {
 
   #start_year <- 2021
   data$year <- as.numeric(as.character(data$year))
-  data <- data[!(data$year < start_year_despite_old_data), ]
+  data <- data[!(data$year < start_year), ]
 
   data <- data %>%
     dplyr::group_by(.data$scenario_geography, .data$scenario, .data$ald_sector, .data$units, .data$technology) %>%
@@ -505,7 +508,7 @@ prepare_IPR_baseline_scenario <- function(data) {
 
 ### Prepare Oxford Scenario Data
 
-prepare_OXF_scenario_data <- function(data, start_year_despite_old_data) {
+prepare_OXF_scenario_data <- function(data, start_year) {
   ### Removing technologies that are not relevant for the stress test
   data <- data %>%
     dplyr::filter(!.data$`Annual energy` %in% c("batteries_ST_transport", "batteries_ST_electricity", "batteries_LT_electricity", "hydrogen"))
@@ -555,7 +558,7 @@ prepare_OXF_scenario_data <- function(data, start_year_despite_old_data) {
 
   #start_year <- 2021
   data$year <- as.numeric(as.character(data$year))
-  data <- data[!(data$year < start_year_despite_old_data), ]
+  data <- data[!(data$year < start_year), ]
 
   data <- data %>%
     dplyr::group_by(.data$scenario_geography, .data$scenario, .data$ald_sector, .data$units, .data$technology) %>%

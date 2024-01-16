@@ -78,7 +78,7 @@ prepare_lcoe_adjusted_price_data_weo <- function(input_data,
 #' @param start_year First year of analysis.
 #'
 #' @export
-prepare_lcoe_adjusted_price_data_oxford2021 <- function(input_data_lcoe_oxford,
+prepare_lcoe_adjusted_price_data_oxford2022 <- function(input_data_lcoe_oxford,
                                                         average_npm_power, start_year) {
   # start_year <- 2021
 
@@ -218,6 +218,9 @@ prepare_lcoe_adjusted_price_data_oxford2021 <- function(input_data_lcoe_oxford,
   ## For NGFS scenarios
   # NOTE: we use Oxford LCOE data but match and label them as NGFS data
   # In detail: NZ2050 -fast DN0 - fast B2DS - fast DT - fast NDC - low CP -low
+  # change to NGFS phase 4
+  # fast: NZ2050, DT, LD, B2DS
+  # slow/no : CP, NDC, FW
 
   prices_adjusted <- prices_adjusted %>%
     dplyr::mutate(GCAM = "GCAM", REMIND = "REMIND", MESSAGE = "MESSAGE") %>%
@@ -227,20 +230,20 @@ prepare_lcoe_adjusted_price_data_oxford2021 <- function(input_data_lcoe_oxford,
   oxford_fast_transition <- prices_adjusted %>%
     dplyr::filter(.data$scenario == "fast_transition_oxford") %>%
     dplyr::select(-c(.data$scenario)) %>%
-    dplyr::mutate(NZ2050 = "NZ2050", DN0 = "DNO", B2DS = "B2DS", DT = "DT") %>%
+    dplyr::mutate(NZ2050 = "NZ2050", LD = "LD", B2DS = "B2DS", DT = "DT") %>%
     tidyr::pivot_longer(.data$NZ2050:.data$DT, names_to = "scenario") %>%
     dplyr::select(-c(.data$value))
 
   oxford_slow_transition <- prices_adjusted %>%
     dplyr::filter(.data$scenario == "no_transition_oxford") %>%
     dplyr::select(-c(.data$scenario)) %>%
-    dplyr::mutate(NDC = "NDC", CP = "CP") %>%
+    dplyr::mutate(NDC = "NDC",FW = "FW", CP = "CP") %>%
     tidyr::pivot_longer(.data$NDC:.data$CP, names_to = "scenario") %>%
     dplyr::select(-c(.data$value))
 
   prices_adjusted_final <- dplyr::full_join(oxford_fast_transition, oxford_slow_transition) %>%
     tidyr::unite("scenario", c(.data$model, .data$scenario), sep = "_") %>%
-    dplyr::mutate(scenario = paste("NGFS2021", .data$scenario, sep = "_"))
+    dplyr::mutate(scenario = paste("NGFS2023", .data$scenario, sep = "_"))
 
   # merging NGFS and Oxford prices
   prices_adjusted_final <- dplyr::full_join(prices_adjusted_final, prices_oxford)

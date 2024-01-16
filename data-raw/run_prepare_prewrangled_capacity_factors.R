@@ -1,6 +1,6 @@
 devtools::load_all()
 
-##set start year 
+##set start year
 # start_year <- 2022 # defined in workflow.R
 
 # prepare capacity factor data WEO 2021
@@ -39,8 +39,8 @@ data <- readr::read_csv(
 ## prepare data
 prepared_data_WEO2021 <- prepare_prewrangled_capacity_factors_WEO2021(data, start_year = start_year)
 
-## read data
-input_path <- fs::path("data-raw", "capacity_factors_data","raw_capacity_factors_NGFS2021.csv")
+##NGFS--- read data
+input_path <- file.path("data-raw", "raw_capacity_factors_NGFSphase4.csv")
 
 data <- readr::read_csv(
   input_path,
@@ -60,7 +60,7 @@ data <- readr::read_csv(
 )
 
 ## prepare data
-prepared_data_NGFS2021 <- prepare_capacity_factors_NGFS2021(data, start_year = start_year)
+prepared_data_NGFS2023 <- prepare_capacity_factors_NGFS2023(data, start_year = start_year)
 
 ### IPR data
 
@@ -98,11 +98,11 @@ prepared_data_OXF2021 <- prepare_capacity_factors_OXF2021(prepared_data_WEO2021)
 
 ## combine and write data
 prepared_data <- prepared_data_WEO2021 %>%
-  dplyr::bind_rows(prepared_data_NGFS2021) %>%
+  dplyr::bind_rows(prepared_data_NGFS2023) %>%
   dplyr::bind_rows(prepared_data_IPR2021) %>%
   dplyr::bind_rows(prepared_data_OXF2021)
 
-prepared_data %>% 
+prepared_data %>%
   dplyr::rename(ald_business_unit=.data$technology) %>%
   readr::write_csv(
   file.path("data-raw", "st_inputs","prewrangled_capacity_factors.csv")

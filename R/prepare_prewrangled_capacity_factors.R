@@ -10,7 +10,7 @@
 #' @return NULL
 
 prepare_prewrangled_capacity_factors_WEO2021 <- function(data, start_year) {
-  # WEO2021 start year should be the release year 
+  # WEO2021 start year should be the release year
   #start_year <- 2021
 
   # WEO2021 end year in raw data is 2040 as it os based on weo2020 at the moment
@@ -251,7 +251,7 @@ prepare_prewrangled_capacity_factors_WEO2021 <- function(data, start_year) {
 #' @family data preparation functions
 #' @return NULL
 
-prepare_capacity_factors_NGFS2021 <- function(data, start_year) {
+prepare_capacity_factors_NGFS2023 <- function(data, start_year) {
 
   data <- data %>%
     dplyr::mutate(scenario = .data$Scenario) %>%
@@ -263,6 +263,8 @@ prepare_capacity_factors_NGFS2021 <- function(data, start_year) {
         .data$scenario == "Current Policies" ~ "CP",
         .data$scenario == "Divergent Net Zero" ~ "DN0",
         .data$scenario == "Net Zero 2050" ~ "NZ2050",
+        .data$scenario == "Fragmented World" ~ "FW",
+        .data$scenario == "Low demand" ~ "LD",
         TRUE ~ .data$scenario
       ),
       # NOTE: rename World to Global to fit the ST scenario geography names
@@ -284,13 +286,14 @@ prepare_capacity_factors_NGFS2021 <- function(data, start_year) {
         TRUE ~ .data$category_c
       ),
       model = dplyr::case_when(
-        .data$Model == "GCAM 5.3+ NGFS" ~ "GCAM",
-        .data$Model == "REMIND-MAgPIE 3.0-4.4" ~ "REMIND",
+        .data$Model == "GCAM 6.0 NGFS" ~ "GCAM",
+        .data$Model == "REMIND-MAgPIE 3.2-4.6" ~ "REMIND",
         .data$Model == "MESSAGEix-GLOBIOM 1.1-M-R12" ~ "MESSAGE",
         TRUE ~ .data$Model
       )
     ) %>%
     dplyr::rename(units = .data$Unit) %>%
+    dplyr::ungroup()%>%
     dplyr::select(-c(.data$Model, .data$Variable, .data$Scenario, .data$category_b, .data$category_c, .data$Region))
 
 
@@ -361,7 +364,7 @@ prepare_capacity_factors_NGFS2021 <- function(data, start_year) {
   data <- data %>%
     dplyr::select(-c(.data$capacity, .data$generation, .data$units)) %>%
     tidyr::unite("scenario", c(.data$model, .data$scenario), sep = "_") %>%
-    dplyr::mutate(scenario = paste("NGFS2021", .data$scenario, sep = "_"))
+    dplyr::mutate(scenario = paste("NGFS2023", .data$scenario, sep = "_"))
 }
 
 ### IPR Capacity Factors
