@@ -329,7 +329,7 @@ preprepare_ngfs_scenario_data <- function(data, start_year) {
     dplyr::mutate(value = sum(.data$value)) %>%
     unique()
 
-  delete_renewables <- data %>% dplyr::filter(!.data$technology == "RenewablesCap")
+  delete_renewables <- data %>% dplyr::filter(!.data$technology %in% c("RenewablesCap"))
 
   data <- dplyr::full_join(combine_renewables_cap, delete_renewables) %>%
     tidyr::unite("scenario", c(.data$model, .data$scenario), sep = "_") %>%
