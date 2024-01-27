@@ -277,7 +277,7 @@ prepare_price_data_long_NGFS2023 <- function(input_data_fossil_fuels_ngfs, start
     ) %>%
     dplyr::rename(unit = .data$Unit, technology = .data$category_c, indicator = .data$category_a) %>%
     dplyr::select(-c(.data$Model, .data$Variable, .data$Scenario, .data$category_b, .data$Region))
-  
+
   data <- data %>%
     dplyr::group_by(dplyr::across(-c(.data$year, .data$value))) %>%
     tidyr::complete(year = tidyr::full_seq(.data$year, 1)) %>%
@@ -285,29 +285,29 @@ prepare_price_data_long_NGFS2023 <- function(input_data_fossil_fuels_ngfs, start
       value = zoo::na.approx(.data$value, .data$year, na.rm = FALSE)
     ) %>%
     dplyr::ungroup()
-  
+
   data <- data %>% dplyr::filter(.data$year >= start_year)
-  
+
   data_oil_gas <- data %>%
     dplyr::filter(.data$sector == "Oil&Gas") %>%
     dplyr::mutate(unit = "$/GJ")
-  
+
   data_coal <- data %>%
     dplyr::filter(.data$sector == "Coal") %>%
     dplyr::group_by(.data$year, .data$scenario_geography, .data$model, .data$scenario) %>%
     dplyr::mutate(value = .data$value / 0.03414368, unit = "$/tonnes")
-  
+
   data <- dplyr::full_join(data_oil_gas, data_coal)
-  
+
   data <- data %>%
     dplyr::rename(price = .data$value) %>%
     tidyr::unite("scenario", c(.data$model, .data$scenario), sep = "_") %>%
-    dplyr::mutate(scenario = paste("NGFS2023", .data$scenario, sep = "_"))
+    dplyr::mutate(scenario = paste0("NGFS2023", .data$scenario))
 }
 
 ### IPR price data function
 
-prepare_price_data_long_IPR2021 <- function(data, start_year) {
+prepare_price_data_long_IPR2023 <- function(data, start_year) {
   ### Objective: extract the prices for Oil coal and Gas
   # Coal: only available for Europe, USA; CHN and JPN. We take the average to get a global variable
   # Gas: only available for USA, Europe and Asia, Plus available as high price and low price. We create a global low and global high and take the average from that
@@ -334,12 +334,10 @@ prepare_price_data_long_IPR2021 <- function(data, start_year) {
         .data$technology == "Coal" ~ "Coal",
       ),
       Scenario = dplyr::case_when(
-        .data$Scenario == "RPS" ~ "IPR2021_RPS",
-        .data$Scenario == "FPS" ~ "IPR2021_FPS"
+        .data$Scenario == "RPS" ~ "IPR2023_RPS",
+        .data$Scenario == "FPS" ~ "IPR2023_FPS"
       )
     )
-
-
 
   ### further deleting unnecessary columns
 
@@ -406,13 +404,12 @@ prepare_price_data_long_IPR2021 <- function(data, start_year) {
   colnames(data)[which(colnames(data) == "Variable_class")] <- "indicator"
 
   ### filtering for start year
-
-  # start_year <- 2021
   data$year <- as.numeric(as.character(data$year))
   data <- data %>% dplyr::filter(.data$year >= start_year)
 
   return(data)
 }
+
 
 ### Function reading LCOE data for IPR2021
 ### For IPR we are using WEO2021 LCOE for the power prices
@@ -420,7 +417,7 @@ prepare_price_data_long_IPR2021 <- function(data, start_year) {
 ### Output of the function is then matched to IPR with a different function (prepare_lcoe_adjusted_price_data_IPR2021)which can be found
 ### in Prepare_LCOE_adjusted_price_data.R
 
-prepare_price_data_long_Power_IPR2021 <- function(input_data_power) {
+prepare_price_data_long_Power_IPR2023 <- function(input_data_power) {
   first_year <- 2020
   power_data_has_expected_columns <- all(
     c(
@@ -563,11 +560,11 @@ prepare_price_data_long_Power_IPR2021 <- function(input_data_power) {
 ## IPR baseline price data
 ## IPR baseline data is a duplicate of WEO2021 STEPS data
 
-prepare_price_data_long_IPR2021_baseline <- function(data) {
+prepare_price_data_long_IPR2023_baseline <- function(data) {
   data <- data %>%
     dplyr::filter(.data$scenario == "WEO2021_STEPS") %>%
     dplyr::mutate(scenario = dplyr::case_when(
-      .data$scenario == "WEO2021_STEPS" ~ "IPR2021_baseline"
+      .data$scenario == "WEO2021_STEPS" ~ "IPR2023_baseline"
     ))
 }
 
@@ -670,3 +667,37 @@ prepare_price_data_long_Oxf2021 <- function(data, start_year) {
   }
   return(data)
 }
+
+
+#' Create automotive prices
+#'
+#' @description
+#' Synthetic creation of automotive prices by setting them to 1,
+#' where automotive sectors exist in the scenario data
+#'
+#'
+#' @param Scenarios_AnalysisInput Scenarios_AnalysisInput
+#'
+#' @return the automotive price dataframe
+#' @export
+#'
+create_automotive_prices <- function(Scenarios_AnalysisInput) {
+  automotive_scenario_data <- Scenarios_AnalysisInput %>%
+    dplyr::filter(.data$ald_sector == "Automotive") %>%
+    dplyr::distinct(.data$scenario,
+                    .data$ald_sector,
+                    .data$ald_business_unit,
+                    .data$year) %>%
+    dplyr::rename(technology = .data$ald_business_unit,
+                  sector = .data$ald_sector)
+
+  auto_prices <- automotive_scenario_data %>%
+    dplyr::mutate(price = 1,
+                  scenario_geography = "Global",
+                  indicator="price",
+                  unit="dummy")
+
+  return(auto_prices)
+}
+
+

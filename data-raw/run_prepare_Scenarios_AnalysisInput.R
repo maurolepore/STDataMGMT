@@ -129,13 +129,13 @@ preprepared_ngfs_data <- preprepared_ngfs_data %>%
   dplyr::mutate(fair_share_perc = dplyr::if_else(is.na(fair_share_perc), 0, fair_share_perc))
 
 
-### IPR Scenario
+### IPR Scenario 2023
 ### Read IPR
 
 input_path <- fs::path(
   "data-raw",
-  "scenario_analysis_input_data",
-  "ipr_Scenarios_AnalysisInput.csv"
+   "scenario_analysis_input_data",
+  "ipr2023_Scenarios_AnalysisInput.csv"
 )
 
 IPR <- as.data.frame(readr::read_csv(
@@ -153,16 +153,22 @@ IPR <- as.data.frame(readr::read_csv(
   )
 ))
 
-prepared_IPR_data <- prepare_IPR_scenario_data(IPR,
+prepared_IPR_data <- prepare_IPR_scenario_data2023(IPR,
                                                start_year = start_year)
+
 # IPR baseline scenario
-# IPR baseline is a duplicate of the WEO2021 STEPs scenario
+# IPR baseline is a duplicate of the WEO2021 STEPs scenario for Coal, OG and Power
+# IPR baseline is a duplicate of the JRC Geco scenario for Automotive
 
 IPR_baseline <- prepare_IPR_baseline_scenario(prepared_data)
+
+IPR_baseline_automotive <- prepare_IPR_baseline_scenario_automotive(prepared_data)
 
 # joining IPR scenarios
 
 prepared_IPR_data <- dplyr::full_join(prepared_IPR_data, IPR_baseline)
+prepared_IPR_data <- dplyr::full_join(prepared_IPR_data, IPR_baseline_automotive)
+
 
 # replace nan fair_share_perc by 0. Nans appear when dividing per 0 in the tmsr computation
 prepared_IPR_data <- prepared_IPR_data %>%
@@ -201,16 +207,16 @@ baseline_scenarios <- c(
   "WEO2021_STEPS",
   "GECO2021_CurPol",
   "WEO2021_APS",
-  "NGFS2023_GCAM_CP",
-  "NGFS2023_MESSAGE_CP",
-  "NGFS2023_REMIND_CP",
-  "NGFS2023_MESSAGE_FW",
-  "NGFS2023_REMIND_FW",
-  "NGFS2023_GCAM_FW",
-  "NGFS2023_MESSAGE_NDC",
-  "NGFS2023_REMIND_NDC",
-  "NGFS2023_GCAM_NDC",
-  "IPR2021_baseline",
+  "NGFS2023GCAM_CP",
+  "NGFS2023MESSAGE_CP",
+  "NGFS2023REMIND_CP",
+  "NGFS2023MESSAGE_FW",
+  "NGFS2023REMIND_FW",
+  "NGFS2023GCAM_FW",
+  "NGFS2023MESSAGE_NDC",
+  "NGFS2023REMIND_NDC",
+  "NGFS2023GCAM_NDC",
+  "IPR2023_baseline",
   "Oxford2021_base"
 )
 shock_scenarios <- c(
@@ -218,20 +224,20 @@ shock_scenarios <- c(
     "WEO2021_NZE_2050",
     "GECO2021_1.5C-Unif",
     "GECO2021_NDC-LTS",
-    "NGFS2023_GCAM_B2DS",
-    "NGFS2023_MESSAGE_B2DS",
-    "NGFS2023_REMIND_B2DS",
-    "NGFS2023_GCAM_LD",
-    "NGFS2023_MESSAGE_LD",
-    "NGFS2023_REMIND_LD",
-    "NGFS2023_GCAM_DT",
-    "NGFS2023_MESSAGE_DT",
-    "NGFS2023_REMIND_DT",
-    "NGFS2023_GCAM_NZ2050",
-    "NGFS2023_MESSAGE_NZ2050",
-    "NGFS2023_REMIND_NZ2050",
-    "IPR2021_FPS",
-    "IPR2021_RPS",
+    "NGFS2023GCAM_B2DS",
+    "NGFS2023MESSAGE_B2DS",
+    "NGFS2023REMIND_B2DS",
+    "NGFS2023GCAM_LD",
+    "NGFS2023MESSAGE_LD",
+    "NGFS2023REMIND_LD",
+    "NGFS2023GCAM_DT",
+    "NGFS2023MESSAGE_DT",
+    "NGFS2023REMIND_DT",
+    "NGFS2023GCAM_NZ2050",
+    "NGFS2023MESSAGE_NZ2050",
+    "NGFS2023REMIND_NZ2050",
+    "IPR2023_FPS",
+    "IPR2023_RPS",
     "Oxford2021_fast"
 )
 

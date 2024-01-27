@@ -333,7 +333,7 @@ preprepare_ngfs_scenario_data <- function(data, start_year) {
 
   data <- dplyr::full_join(combine_renewables_cap, delete_renewables) %>%
     tidyr::unite("scenario", c(.data$model, .data$scenario), sep = "_") %>%
-    dplyr::mutate(scenario = paste("NGFS2023", .data$scenario, sep = "_"))
+    dplyr::mutate(scenario = paste0("NGFS2023", .data$scenario))
 }
 
 
@@ -361,11 +361,14 @@ style_ngfs <- function(data) {
 
 #### IPR Scenario Analysis Function
 #### Prepares Scenario Analysis Input for IPR using the usual routine
-prepare_IPR_scenario_data <- function(data, start_year) {
+prepare_IPR_scenario_data2023 <- function(data, start_year) {
   ### Creating a technology column
 
-  data$technology <- ifelse(data$Sector == "Power", paste(data$Sub_variable_class_2, data$Sector, sep = "_"), data$Sub_variable_class_1)
-
+  data$technology <- ifelse(data$Sector == "Power",
+                            paste(data$Sub_variable_class_2, data$Sector, sep = "_"),
+                            ifelse(data$Sector == "Transport",
+                                   data$Sub_variable_class_2,
+                                   data$Sub_variable_class_1))
 
   ### Renaming technologies and Sector
 
@@ -385,7 +388,11 @@ prepare_IPR_scenario_data <- function(data, start_year) {
         .data$technology == "Biomass_Power" ~ "BiomassCap", ### Is this the same as Biomass?
         .data$technology == "Offshore wind_Power" ~ "OffWindCap",
         .data$technology == "Onshore wind_Power" ~ "OnWindCap",
-        .data$technology == "Solar_Power" ~ "SolarCap"
+        .data$technology == "Solar_Power" ~ "SolarCap",
+        .data$technology == "BEV" ~ "Electric",
+        .data$technology == "PHEV" ~ "Hybrid",
+        .data$technology == "H2" ~ "FuelCell",
+        .data$technology == "ICE" ~ "ICE"
       ),
       ald_sector = dplyr::case_when(
         .data$technology == "Oil" ~ "Oil&Gas",
@@ -399,13 +406,18 @@ prepare_IPR_scenario_data <- function(data, start_year) {
         .data$technology == "BiomassCap" ~ "Power",
         .data$technology == "OffWindCap" ~ "Power",
         .data$technology == "OnWindCap" ~ "Power",
-        .data$technology == "SolarCap" ~ "Power"
+        .data$technology == "SolarCap" ~ "Power",
+        .data$technology == "ICE" ~ "Automotive",
+        .data$technology == "Electric" ~ "Automotive",
+        .data$technology == "Hybrid" ~ "Automotive",
+        .data$technology == "FuelCell" ~ "Automotive",
       ),
       Scenario = dplyr::case_when(
-        .data$Scenario == "RPS" ~ "IPR2021_RPS",
-        .data$Scenario == "FPS" ~ "IPR2021_FPS"
+        .data$Scenario == "RPS" ~ "IPR2023_RPS",
+        .data$Scenario == "FPS" ~ "IPR2023_FPS"
       )
     )
+
 
   ### Renaming Region WORLD to Global
 
@@ -446,7 +458,6 @@ prepare_IPR_scenario_data <- function(data, start_year) {
 
   ### Calculating TMSR
 
-  #start_year <- 2021
   data$year <- as.numeric(as.character(data$year))
   data <- data[!(data$year < start_year), ]
 
@@ -475,7 +486,8 @@ prepare_IPR_scenario_data <- function(data, start_year) {
   ### Green Techs, Direction and FairSharePerc
   ### Defines direction of technology based on whether its considered a green technology
 
-  green_techs <- c("RenewablesCap", "HydroCap", "NuclearCap", "SolarCap", "OffWindCap", "OnWindCap", "BiomassCap")
+  green_techs <- c("RenewablesCap", "HydroCap", "NuclearCap", "SolarCap", "OffWindCap", "OnWindCap", "BiomassCap",
+                   "Electric", "FuelCell") ##ADDING Automotive Electric and FuelCell. I believe Hybrid is better a declining technology
 
   data <- data %>%
     dplyr::mutate(
@@ -490,21 +502,37 @@ prepare_IPR_scenario_data <- function(data, start_year) {
     "scenario_geography", "scenario", "ald_sector", "technology", "units", "year",
     "direction", "fair_share_perc"
   )]
+
+  #limiting time horizon for IPR automotive until 2041, this is the maximum data we currently have from
+  #the GECO2021 scenarios
+
+  data <- data %>%
+    dplyr::filter(!(.data$ald_sector == "Automotive" & .data$year >= 2042))
 }
 
-## IPR Baseline Scenario
+## IPR Baseline Scenario part I
 ## builts upon the WEO2021 STEPS scenario
 prepare_IPR_baseline_scenario <- function(data) {
   # takes WEO wrangled scenario data and outputs only baseline with the scenario renamed to IPR2021_baseline
   data <- data %>%
     dplyr::filter(.data$scenario == "WEO2021_STEPS") %>%
     dplyr::mutate(scenario = dplyr::case_when(
-      .data$scenario == "WEO2021_STEPS" ~ "IPR2021_baseline"
+      .data$scenario == "WEO2021_STEPS" ~ "IPR2023_baseline"
     ))
 
   return(data)
 }
 
+## IPR Baseline Scenario part II Automotive
+## builts upon the GECO2021 CurPol scenario
+prepare_IPR_baseline_scenario_automotive <- function(data) {
+  data <- data %>%
+    dplyr::filter(.data$scenario == "GECO2021_CurPol") %>%
+    dplyr::mutate(scenario = dplyr::case_when(
+      .data$scenario == "GECO2021_CurPol" ~ "IPR2023_baseline"
+    ))
+  return(data)
+}
 
 ### Prepare Oxford Scenario Data
 
