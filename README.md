@@ -9,12 +9,7 @@ tool TRISK available on this repository :
 
 TRISK input dataframes follow this structure :
 
-<figure>
-<img
-src="https://github.com/STDATA_/2DegreesInvesting/STDataMGMT/outputs_diagram.jpg?raw=true"
-alt="alt text" />
-<figcaption aria-hidden="true">alt text</figcaption>
-</figure>
+![](man/figures/outputs_diagram.jpg)
 
 # STDataMGMT
 
