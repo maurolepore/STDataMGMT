@@ -41,7 +41,7 @@ country_filter <- c("SK")
 # only use assets with HQ in the selected countries
 filter_hqs <- FALSE
 # only use assets in the selected countries
-filter_assets <- FALSE
+filter_assets <- TRUE
 
 
 # abcd  params ========================================
@@ -69,7 +69,7 @@ DB_company_emissions <- outputs_list[["company_emissions"]]
 
 ## Prepare raw Asset Impact
 ```{r include=FALSE}
-company_informations <- read_asset_resolution(path_ar_data_raw,
+company_informations <- STDataMGMT:::read_asset_resolution(path_ar_data_raw,
                                               sheet_name = "Company Information")
 # check that company/country pairs are uniques
 company_informations %>%
@@ -79,7 +79,7 @@ company_informations %>%
   assertr::verify(max(nrows) == 1)
 
 DB_company_activities <- DB_company_activities %>%
-  filter_countries_coverage(
+  STDataMGMT:::filter_countries_coverage(
     company_informations = company_informations,
     country_filter = country_filter,
     filter_hqs = filter_hqs,
@@ -87,7 +87,7 @@ DB_company_activities <- DB_company_activities %>%
   )
 
 DB_company_emissions <- DB_company_emissions %>%
-  filter_countries_coverage(
+  STDataMGMT:::filter_countries_coverage(
     company_informations = company_informations,
     country_filter = country_filter,
     filter_hqs = filter_hqs,
@@ -96,6 +96,7 @@ DB_company_emissions <- DB_company_emissions %>%
 
 ```
 
+### Number of companies per country
 
 ```{r}
 DB_company_activities %>%
@@ -124,12 +125,13 @@ abcd_stress_test_input <-
 ```
 
 
+# number of unique companies
 
 ```{r}
-abcd_stress_test_input %>% 
-  distinct(company_name)
+length(abcd_stress_test_input %>% distinct(company_name)%>% pull())
 ```
 
+### BU distribution
 
 ```{r}
 abcd_stress_test_input %>%
@@ -141,6 +143,7 @@ abcd_stress_test_input %>%
 ```
 
 
+# Geographies distribution
 ```{r}
 abcd_stress_test_input %>%
   distinct(company_id, scenario_geography) %>%

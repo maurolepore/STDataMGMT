@@ -44,7 +44,10 @@ usethis::use_data(ngfs_carbon_price, overwrite = TRUE)
 
 # used only in run_prepare_abcd_stress_test_input.R 
 # but kept in environment until end of script 
-country_filter <- c("GR") 
+# countrycode::codelist %>%
+#   filter(country.name.en == "Slobakia") %>%
+#   dplyr::pull(.data$ecb)
+country_filter <- c("SK") 
 
 # those 2 are deleted from the environment after the run_prepare_abcd_stress_test_input.R 
 filter_hqs <- TRUE
