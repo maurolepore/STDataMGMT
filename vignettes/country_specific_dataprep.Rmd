@@ -33,10 +33,10 @@ path_ar_data_raw <-
 
 
 # leave empty to use all countries
-# countrycode::codelist %>%
-#   filter(country.name.en == "Slovakia") %>%
-#   dplyr::pull(.data$ecb)
-country_filter <- c("SK") 
+# country_filter <- c()
+country_filter <- countrycode::codelist %>%
+  filter(country.name.en == "France") %>%
+  dplyr::pull(.data$ecb)
 
 # only use assets with HQ in the selected countries
 filter_hqs <- FALSE
@@ -50,8 +50,6 @@ time_horizon <- 5
 additional_year <- NULL
 sector_list <- c("Automotive", "Power", "Oil&Gas", "Coal")
 km_per_vehicle <- 15000
-
-
 
 ```
 
@@ -69,8 +67,10 @@ DB_company_emissions <- outputs_list[["company_emissions"]]
 
 ## Prepare raw Asset Impact
 ```{r include=FALSE}
-company_informations <- STDataMGMT:::read_asset_resolution(path_ar_data_raw,
-                                              sheet_name = "Company Information")
+company_informations <- STDataMGMT:::read_asset_resolution(
+  path_ar_data_raw,
+  sheet_name = "Company Information")
+
 # check that company/country pairs are uniques
 company_informations %>%
   dplyr::group_by(company_id, ald_location) %>%
@@ -96,6 +96,13 @@ DB_company_emissions <- DB_company_emissions %>%
 
 ```
 
+
+```{r}
+length(DB_company_activities %>% distinct(company_id) %>% dplyr::pull())
+```
+
+
+
 ### Number of companies per country
 
 ```{r}
@@ -105,7 +112,26 @@ DB_company_activities %>%
   summarise(n = n()) %>%
   arrange(desc(n)) 
 ```
+### Number of companies per Sector
 
+```{r}
+DB_company_activities %>%
+  distinct(company_id, ald_sector) %>%
+  group_by( ald_sector) %>%
+  summarise(n = n()) %>%
+  arrange(desc(n)) %>%
+  print(n = Inf)
+
+```
+### Number of companies per BU
+
+```{r}
+DB_company_activities %>%
+  distinct(company_id, ald_sector, ald_business_unit) %>%
+  group_by( ald_sector, ald_business_unit) %>%
+  summarise(n = n()) %>%
+  arrange(desc(n)) 
+```
 
 ## Transform to ABCD
 
@@ -114,7 +140,7 @@ abcd_stress_test_input <-
   prepare_abcd_data(
     company_activities = DB_company_activities,
     company_emissions = DB_company_emissions,
-    scenarios_geographies = scenarios_geographies, # loaded from package
+    scenarios_geographies = STDataMGMT::scenarios_geographies, # loaded from package
     start_year = start_year,
     time_horizon = time_horizon,
     additional_year = additional_year,
@@ -142,6 +168,17 @@ abcd_stress_test_input %>%
   print(n = Inf)
 ```
 
+
+# Sector distribution
+
+```{r}
+abcd_stress_test_input %>%
+  distinct(company_id, ald_sector) %>%
+  group_by(ald_sector) %>%
+  summarise(n = n()) %>%
+  arrange(desc(n)) %>%
+  print(n = Inf)
+```
 
 # Geographies distribution
 ```{r}

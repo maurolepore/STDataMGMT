@@ -24,19 +24,19 @@ rm(list = ls()[ls() != "start_year"])
 
 
 
-# ===== SAVE AS PACKAGE DATA
+# # ===== SAVE AS PACKAGE DATA // bad idea
 
-Scenarios_AnalysisInput <- readr::read_csv(here::here("data-raw", "st_inputs", "Scenarios_AnalysisInput.csv"))
-usethis::use_data(Scenarios_AnalysisInput, overwrite = TRUE)
+# Scenarios_AnalysisInput <- readr::read_csv(here::here("data-raw", "st_inputs", "Scenarios_AnalysisInput.csv"))
+# usethis::use_data(Scenarios_AnalysisInput, overwrite = TRUE)
 
-prewrangled_capacity_factors <- readr::read_csv(here::here("data-raw", "st_inputs", "prewrangled_capacity_factors.csv"))
-usethis::use_data(prewrangled_capacity_factors, overwrite = TRUE)
+# prewrangled_capacity_factors <- readr::read_csv(here::here("data-raw", "st_inputs", "prewrangled_capacity_factors.csv"))
+# usethis::use_data(prewrangled_capacity_factors, overwrite = TRUE)
 
-price_data_long <- readr::read_csv(here::here("data-raw", "st_inputs", "price_data_long.csv"))
-usethis::use_data(price_data_long, overwrite = TRUE)
+# price_data_long <- readr::read_csv(here::here("data-raw", "st_inputs", "price_data_long.csv"))
+# usethis::use_data(price_data_long, overwrite = TRUE)
 
-ngfs_carbon_price <- readr::read_csv(here::here("data-raw", "st_inputs", "ngfs_carbon_price.csv"))
-usethis::use_data(ngfs_carbon_price, overwrite = TRUE)
+# ngfs_carbon_price <- readr::read_csv(here::here("data-raw", "st_inputs", "ngfs_carbon_price.csv"))
+# usethis::use_data(ngfs_carbon_price, overwrite = TRUE)
 
 
 
@@ -66,7 +66,14 @@ rm(list = ls()[ls() != c("country_filter", "start_year")])
 
 # Save data to dropbox only if no filter applied
 if (length(country_filter) == 0) {
-  for (fp in c("abcd_stress_test_input.csv","financial_data_stress_test.csv")){
+  for (fp in c(
+    "abcd_stress_test_input.csv",
+    "financial_data_stress_test.csv",
+    "Scenarios_AnalysisInput.csv",
+    "prewrangled_capacity_factors.csv",
+    "price_data_long.csv",
+    "ngfs_carbon_price.csv"
+    )){
     
     readr::write_csv(
       readr::read_csv(here::here("data-raw", "st_inputs", fp)),
