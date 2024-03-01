@@ -87,6 +87,41 @@ interpolation_groups <- c(
 prepared_data <- prepare_scenario_data(data = weo_geco_data)
 
 
+# WEO 2023 Global
+# Only Global for now, due to data availability issues
+
+#Preprocessed WEO data
+input_path_weo23 <- fs::path(
+  "data-raw",
+  "scenario_analysis_input_data",
+  "weo23_Scenarios_AnalysisInput.csv"
+)
+
+weo23_data <- readr::read_csv(
+  input_path,
+  col_types = readr::cols_only(
+    source = "c",
+    scenario = "c",
+    scenario_geography = "c",
+    sector = "c",
+    technology = "c",
+    units = "c",
+    indicator = "c",
+    year = "d",
+    value = "d"
+  )
+)
+
+weo23_data <- weo23_data %>%
+  interpolate_yearly(!!!rlang::syms(interpolation_groups)) %>%
+  dplyr::filter(year >= start_year) %>%
+  add_market_share_columns(start_year = start_year)
+
+weo23_data <- weo23_data %>%
+  format_p4i(green_techs)
+
+
+
 #NGFS Phase IV
 input_path <- fs::path(
   "data-raw",
