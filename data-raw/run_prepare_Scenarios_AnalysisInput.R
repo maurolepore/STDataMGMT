@@ -216,7 +216,7 @@ STEEL <- as.data.frame(readr::read_csv(
   )
 ))
 
-prepared_steel_data <- prepare_steel_scenario_data(STEEL)
+prepared_steel_data <- prepare_steel_scenario_data(STEEL, start_year = start_year)
 
 
 ### Merge Data from Scenario Sources

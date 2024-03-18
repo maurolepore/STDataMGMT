@@ -572,59 +572,59 @@ prepare_capacity_factors_GEM_steel <- function(data){
   
   # Renaming BOF Steel directly
   data <- data %>%
-    mutate(technology = case_when(
-      technology == "BOF Steel" ~ "BOF-BF",
+    dplyr::mutate(technology = dplyr::case_when(
+      .data$technology == "BOF Steel" ~ "BOF-BF",
       TRUE ~ technology
     ))
   
   # Step 2: Create duplicates for EAF Steel with three new names, and DRI with two new names
   eaf_bf <- data %>%
-    filter(technology == "EAF Steel") %>%
-    mutate(technology = "EAF-BF")
+    dplyr::filter(.data$technology == "EAF Steel") %>%
+    dplyr::mutate(technology = "EAF-BF")
   
   eaf_ohf <- data %>%
-    filter(technology == "EAF Steel") %>%
-    mutate(technology = "EAF-OHF")
+    dplyr::filter(.data$technology == "EAF Steel") %>%
+    dplyr::mutate(technology = "EAF-OHF")
   
   eaf_mm <- data %>%
-    filter(technology == "EAF Steel") %>%
-    mutate(technology = "EAF-MM")
+    dplyr::filter(.data$technology == "EAF Steel") %>%
+    dplyr::mutate(technology = "EAF-MM")
   
   bof_dri <- data %>%
-    filter(technology == "DRI") %>%
-    mutate(technology = "BOF-DRI")
+    dplyr::filter(.data$technology == "DRI") %>%
+    dplyr::mutate(technology = "BOF-DRI")
   
   eaf_dri <- data %>%
-    filter(technology == "DRI") %>%
-    mutate(technology = "EAF-DRI")
+    dplyr::filter(.data$technology == "DRI") %>%
+    dplyr::mutate(technology = "EAF-DRI")
   
   # Combining the new duplicated datasets back with the original, excluding original EAF Steel and DRI rows
   data <- data %>%
-    filter(!(technology %in% c("EAF Steel", "DRI"))) %>%
-    bind_rows(eaf_bf, eaf_ohf, eaf_mm, bof_dri, eaf_dri)
+    dplyr::filter(!(.data$technology %in% c("EAF Steel", "DRI"))) %>%
+    dplyr::bind_rows(eaf_bf, eaf_ohf, eaf_mm, bof_dri, eaf_dri)
   
   # Step 3: Duplicate all observations for the scenario column
   data <- data %>%
-    mutate(scenario = "Steel_baseline") %>%
-    bind_rows(mutate(data, scenario = "Steel_NZ"))
+    dplyr::mutate(scenario = "Steel_baseline") %>%
+    dplyr::bind_rows(dplyr::mutate(data, scenario = "Steel_NZ"))
   
   # Expand dataset first without attempting to fill 'value'
   data <- data %>%
-    group_by(technology, scenario, scenario_geography) %>%
-    complete(year = 2021:2050) %>%
-    ungroup()
+    dplyr::group_by(.data$technology, .data$scenario, .data$scenario_geography) %>%
+    tidyr::complete(year = 2021:2050) %>%
+    dplyr::ungroup()
   
   # This step assumes uses the first non-NA 'value' for each 'technology', 'scenario', 'scenario_geography' combination
   data <- data %>%
-    group_by(technology, scenario, scenario_geography) %>%
-    mutate(value = ifelse(is.na(value), first(value[!is.na(value)]), value)) %>%
-    ungroup()
+    dplyr::group_by(.data$technology, .data$scenario, .data$scenario_geography) %>%
+    dplyr::mutate(value = ifelse(is.na(.data$value), dplyr::first(.data$value[!is.na(.data$value)]), .data$value)) %>%
+    dplyr::ungroup()
   
   # filtering for only relevant technologies
   data <- data %>%
-    filter(technology %in% c("BOF-BF", "BOF-DRI", "EAF-BF", "EAF-DRI", "EAF-OHF", "EAF-MM"))
+    dplyr::filter(.data$technology %in% c("BOF-BF", "BOF-DRI", "EAF-BF", "EAF-DRI", "EAF-OHF", "EAF-MM"))
   
   #renaming value column
   data <- data %>%
-    rename(capacity_factor = value)
+    dplyr:: rename(capacity_factor = .data$value)
 }

@@ -698,67 +698,67 @@ prepare_OXF_scenario_data <- function(data, start_year) {
 }
 
 ## Prepare Steel Scenario Data
-prepare_steel_scenario_data <- function(data) {
+prepare_steel_scenario_data <- function(data, start_year) {
   
   data <- data %>%
-    rename(value = "Production (Mt)") %>% # renaming
-    filter(technology %in% c('Avg BF-BOF', 'DRI-Melt-BOF', 'EAF', 'DRI-EAF'))%>% # selecting relevant technologies
-    filter(scenario %in% c('Baseline', 'Carbon Cost')) # selecting relevant scenarios
+    dplyr::rename(value = "Production (Mt)") %>% # renaming
+    dplyr::filter(.data$technology %in% c('Avg BF-BOF', 'DRI-Melt-BOF', 'EAF', 'DRI-EAF'))%>% # selecting relevant technologies
+    dplyr::filter(.data$scenario %in% c('Baseline', 'Carbon Cost')) # selecting relevant scenarios
   
   # creates rows for missing yearly observations
   data <- data %>%
     # Ensure the year column is treated as a numeric column
-    mutate(year = as.numeric(as.character(year))) %>%
+    dplyr::mutate(year = as.numeric(as.character(.data$year))) %>%
     # Complete missing combinations of scenario, technology, and year
-    complete(scenario, technology, year = 2020:2050) %>%
+    tidyr::complete(.data$scenario, .data$technology, year = 2020:2050) %>%
     # arrange the dataset for easier reading
-    arrange(scenario, technology, year)
+    dplyr::arrange(.data$scenario, .data$technology, .data$year)
   
   data$scenario_geography <- "Global"
   data$sector <- "Steel"
   
   # rename  specified technologies
   data_renamed <- data %>%
-    mutate(technology = case_when(
-      technology == "Avg BF-BOF" ~ "BOF-BF",
-      technology == "DRI-Melt-BOF" ~ "BOF-DRI",
-      technology == "DRI-EAF" ~ "EAF-DRI",
+    dplyr:: mutate(technology = dplyr::case_when(
+      .data$technology == "Avg BF-BOF" ~ "BOF-BF",
+      .data$technology == "DRI-Melt-BOF" ~ "BOF-DRI",
+      .data$technology == "DRI-EAF" ~ "EAF-DRI",
       TRUE ~ technology
     ))
   
   # duplicate rows for "EAF" and rename the technology accordingly
   data <- data_renamed %>%
     # Identify rows with "EAF" technology
-    filter(technology == "EAF") %>%
+    dplyr::filter(.data$technology == "EAF") %>%
     # Duplicate each row 3 times, setting technology to EAF-BF, EAF-OHF, and EAF-MM for each duplicate
-    uncount(3) %>%
-    mutate(technology = case_when(
+    tidyr::uncount(3) %>%
+    dplyr::mutate(technology = dplyr::case_when(
       row_number() %% 3 == 1 ~ "EAF-BF",
       row_number() %% 3 == 2 ~ "EAF-OHF",
       TRUE ~ "EAF-MM"
     )) %>%
     # Bind the modified rows back to the original dataset, excluding the original "EAF" rows
-    bind_rows(data_renamed %>% filter(technology != "EAF"))
+    dplyr::bind_rows(data_renamed %>% dplyr::filter(.data$technology != "EAF"))
   
   ## some technologies "BOF_BF" have NAs in the last years, presumable beause the value goes to 0
   ## replacing NAs for these technologies with 0
   
   data <- data %>%
     # Group by scenario and technology to treat each combination individually
-    group_by(scenario, technology) %>%
+    dplyr::group_by(.data$scenario, .data$technology) %>%
     # Arrange by year within each group to ensure chronological order
-    arrange(year, .by_group = TRUE) %>%
+    dplyr::arrange(.data$year, .by_group = TRUE) %>%
     # Apply a custom replacement for trailing NAs within each group
-    mutate(
+    dplyr::mutate(
       # Identify the last year with a non-NA value for each group
-      last_value_year = max(year[!is.na(value)], na.rm = TRUE),
+      last_value_year = max(.data$year[!is.na(.data$value)], na.rm = TRUE),
       # Replace NA with 0 in years following the last non-NA year
-      value = ifelse(year > last_value_year, 0, value)
+      value = ifelse(.data$year > .data$last_value_year, 0, .data$value)
     ) %>%
     # Remove the temporary column used for calculation
-    select(-last_value_year) %>%
+    dplyr::select(-.data$last_value_year) %>%
     # Ungroup to remove the grouping structure
-    ungroup()
+    dplyr::ungroup()
   
   ##
   # BOF-DRI has missing values in the first years of the time series
@@ -769,14 +769,14 @@ prepare_steel_scenario_data <- function(data) {
   
   # Prepare the replacement value
   replacement_value <- data %>%
-    filter(year == 2026, technology == "BOF-DRI") %>%
-    select(scenario, value_2026 = value) %>%
-    distinct()
+    dplyr::filter(.data$year == 2026, .data$technology == "BOF-DRI") %>%
+    dplyr::select(.data$scenario, value_2026 = .data$value) %>%
+    dplyr::distinct()
   
   data <- data %>%
-    left_join(replacement_value, by = "scenario") %>%
-    mutate(value = if_else(technology == "BOF-DRI" & is.na(value) & !is.na(value_2026), value_2026, value)) %>%
-    select(-value_2026) # Clean up, remove the helper column
+    dplyr::left_join(replacement_value, by = "scenario") %>%
+    dplyr::mutate(value = dplyr::if_else(.data$technology == "BOF-DRI" & is.na(.data$value) & !is.na(.data$value_2026), .data$value_2026, .data$value)) %>%
+    dplyr::select(-.data$value_2026) # Clean up, remove the helper column
   
   
   # calculate tmsr smsp
@@ -784,7 +784,7 @@ prepare_steel_scenario_data <- function(data) {
   # aggregating the sector like that
   # I assume now only tsmr
   data <- data %>%
-    dplyr::filter(year >= start_year) %>%
+    dplyr::filter(.data$year >= start_year) %>%
     add_market_share_columns(start_year = start_year)
   
   # Adding a direction column
@@ -801,17 +801,17 @@ prepare_steel_scenario_data <- function(data) {
   data$fair_share_perc <- data$tmsr
   
   data <- data %>%
-    dplyr::rename(ald_sector = sector)
+    dplyr::rename(ald_sector = .data$sector)
   
   # Select and rearrange columns
   data <- data %>%
-    select(scenario_geography, scenario, ald_sector, technology, units, year, direction, fair_share_perc)
+    dplyr::select(.data$scenario_geography, .data$scenario, .data$ald_sector, .data$technology, .data$units, .data$year, .data$direction, .data$fair_share_perc)
   
   # Rename scenarios
   data <- data %>%
-    mutate(scenario = case_when(
-      scenario == "Baseline" ~ "Steel_baseline",
-      scenario == "Carbon Cost" ~ "Steel_NZ",
+    dplyr::mutate(scenario = dplyr::case_when(
+      .data$scenario == "Baseline" ~ "Steel_baseline",
+      .data$scenario == "Carbon Cost" ~ "Steel_NZ",
       TRUE ~ scenario  # Keeps all other values as they are
     ))
 }

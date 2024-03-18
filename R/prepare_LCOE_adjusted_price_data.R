@@ -329,50 +329,49 @@ prepare_lcoe_adjusted_price_data_IPR2023 <- function(input_data,
 }
 
 # Steel Sector: MP adjustments
-
 # Function #1: wrangles the raw LC data into the correct format
 MP_LC_steel_wrangling <- function(data) {
   
   # creating global aggregate
   global_aggregate <- data %>%
-    group_by(scenario, year, technology) %>%
-    summarise(levelized_cost = mean(levelized_cost, na.rm = TRUE), .groups = 'drop') %>%
-    mutate(region = 'Global')
+    dplyr::group_by(.data$scenario, .data$year, .data$technology) %>%
+    dplyr::summarise(levelized_cost = mean(.data$levelized_cost, na.rm = TRUE), .groups = 'drop') %>%
+    dplyr::mutate(region = 'Global')
   
   # Append the new 'Global' region rows to the original dataset
   data <- rbind(data, global_aggregate)
   
   # Rename columns in LC data
   data <- data %>%
-    rename(price = levelized_cost, scenario_geography = region)
+    dplyr::rename(price = .data$levelized_cost, scenario_geography = .data$region)
   
   
   data <- data %>%
-    filter(technology %in% c('Avg BF-BOF', 'DRI-Melt-BOF', 'EAF', 'DRI-EAF'))%>% # selecting relevant technologies
-    filter(scenario %in% c('baseline', 'carbon_cost')) # selecting relevant scenarios
+    dplyr::filter(.data$technology %in% c('Avg BF-BOF', 'DRI-Melt-BOF', 'EAF', 'DRI-EAF'))%>% # selecting relevant technologies
+    dplyr::filter(.data$scenario %in% c('baseline', 'carbon_cost')) # selecting relevant scenarios
   
   # renaming technologies
   data <- data %>%
-    mutate(technology = case_when(
-      technology == "Avg BF-BOF" ~ "BOF-BF",
-      technology == "DRI-Melt-BOF" ~ "BOF-DRI",
-      technology == "DRI-EAF" ~ "EAF-DRI",
+    dplyr::mutate(technology = dplyr::case_when(
+      .data$technology == "Avg BF-BOF" ~ "BOF-BF",
+      .data$technology == "DRI-Melt-BOF" ~ "BOF-DRI",
+      .data$technology == "DRI-EAF" ~ "EAF-DRI",
       TRUE ~ technology
     ))
   
   # duplicate rows for "EAF" and rename the technology accordingly
   data <- data %>%
     # Identify rows with "EAF" technology
-    filter(technology == "EAF") %>%
+    dplyr::filter(.data$technology == "EAF") %>%
     # Duplicate each row 3 times, setting technology to EAF-BF, EAF-OHF, and EAF-MM for each duplicate
-    uncount(3) %>%
-    mutate(technology = case_when(
+    tidyr::uncount(3) %>%
+    dplyr::mutate(technology = dplyr::case_when(
       row_number() %% 3 == 1 ~ "EAF-BF",
       row_number() %% 3 == 2 ~ "EAF-OHF",
       TRUE ~ "EAF-MM"
     )) %>%
     # Bind the modified rows back to the original dataset, excluding the original "EAF" rows
-    bind_rows(data %>% filter(technology != "EAF"))
+    dplyr::bind_rows(data %>% dplyr::filter(.data$technology != "EAF"))
   
   # adding columns
   data$sector <- "Steel"
@@ -397,7 +396,7 @@ prepare_lc_adjusted_price_data_steel <- function(input_data,
   
   implied_price <- prices_with_lc %>%
     dplyr::filter(.data$year == .env$start_year) %>%
-    dplyr::mutate(implied_price = .data$price / (1 - .env$average_npm_power)) %>%
+    dplyr::mutate(implied_price = .data$price / (1 - .env$average_npm_steel)) %>%
     dplyr::mutate(absolute_npm = .data$implied_price - .data$price) %>%
     dplyr::select(
       c(
@@ -432,7 +431,7 @@ prepare_lc_adjusted_price_data_steel <- function(input_data,
     dplyr::select(colnames(input_data))
   
   prices_adjusted <- prices_adjusted %>%
-    select(-source)
+    dplyr::select(-.data$source)
   
   return(prices_adjusted)
 }
