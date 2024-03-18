@@ -185,6 +185,33 @@ price_data_long_adjusted_OXF2021 <- prepare_price_data_long_Oxf2021(input_data_f
 
 ### NOTE: Oxford power prices are already in the data through lcoe_adjusted_price_data_oxford2021_2022
 
+## Steel Price Data
+## For Steel prices, we transform LC values given by MP into prices.
+input_path_steel_LC <- file.path("data-raw", "price_data_long_data","raw_MP_LC_steel.csv")
+
+steel_lc_raw <- readr::read_delim(
+  input_path_steel_LC,
+  delim = ";",
+  col_types = readr::cols(
+    scenario = "c",
+    year = "d",
+    region = "c",
+    technology = "c",
+    levelized_cost = "d",
+    .default = readr::col_number()
+  )
+)
+
+# processig raw data
+steel_lc_data <- MP_LC_steel_wrangling(steel_lc_raw)
+
+#creating steel price data
+#average steel npm (to be updated)
+steel_npm <- 0.08
+
+price_data_long_adjusted_MP_Steel <- prepare_lc_adjusted_price_data_steel(input_data=steel_lc_data, average_npm_steel = steel_npm, start_year = start_year)
+
+
 ## prepare price data Automotive
 
 # scenarios with automotive sector are identified in the scenario file
