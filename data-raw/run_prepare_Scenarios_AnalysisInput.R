@@ -197,11 +197,33 @@ OXF <- as.data.frame(readr::read_csv(
 prepared_OXF_data <- prepare_OXF_scenario_data(OXF,
                                                start_year = start_year)
 
+
+## Mission Possible Steel Scenarios
+
+input_path_steel <- fs::path(
+  "data-raw",
+  "scenario_analysis_input_data",
+  "MP_steel_Scenario_Analysis_Input.csv"
+)
+
+STEEL <- as.data.frame(readr::read_csv(
+  input_path_steel,
+  col_types = readr::cols_only(
+    scenario = "c",
+    technology = "c",
+    year = "d",
+    "Production (Mt)" = "d"
+  )
+))
+
+prepared_steel_data <- prepare_steel_scenario_data(STEEL)
+
+
 ### Merge Data from Scenario Sources
 prepared_data_IEA_NGFS <- dplyr::full_join(prepared_data, preprepared_ngfs_data)
 prepared_data_IPR_OXF <- dplyr::full_join(prepared_IPR_data, prepared_OXF_data)
 prepared_data_combined <- dplyr::full_join(prepared_data_IEA_NGFS, prepared_data_IPR_OXF)
-
+prepared_data_combined <- dplyr::full_join(prepared_data_combined, prepared_steel_data)
 
 baseline_scenarios <- c(
   "WEO2021_STEPS",
@@ -218,7 +240,8 @@ baseline_scenarios <- c(
   "NGFS2023GCAM_NDC",
   "IPR2023_baseline",
   "IPR2023Automotive_baseline",
-  "Oxford2021_base"
+  "Oxford2021_base",
+  "Steel_baseline"
 )
 shock_scenarios <- c(
     "WEO2021_SDS",
@@ -239,7 +262,8 @@ shock_scenarios <- c(
     "NGFS2023REMIND_NZ2050",
     "IPR2023_FPS",
     "IPR2023Automotive_FPS",
-    "Oxford2021_fast"
+    "Oxford2021_fast",
+    "Steel_NZ"
 )
 
 prepared_data_combined <- prepared_data_combined %>%
