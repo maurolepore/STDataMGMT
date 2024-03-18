@@ -96,11 +96,27 @@ prepared_data_IPR2023 <- dplyr::full_join(prepared_data_IPR2023, IPR_baseline)
 
 prepared_data_OXF2021 <- prepare_capacity_factors_OXF2021(prepared_data_WEO2021)
 
+## Steel Capacity Factors - GEM
+input_path_steel <- file.path("data-raw", "capacity_factors_data", "preprocessed_capacity_factors_GEM_Steel.csv")
+
+steel_cf <- readr::read_csv(
+  input_path_steel,
+  col_types = readr::cols(
+    year = "d",
+    technology = "c",
+    value = "d",
+    .default = readr::col_number()
+  )
+)
+
+prepared_data_steel <- prepare_capacity_factors_GEM_steel(steel_cf) 
+
 ## combine and write data
 prepared_data <- prepared_data_WEO2021 %>%
   dplyr::bind_rows(prepared_data_NGFS2023) %>%
   dplyr::bind_rows(prepared_data_IPR2023) %>%
-  dplyr::bind_rows(prepared_data_OXF2021)
+  dplyr::bind_rows(prepared_data_OXF2021) %>%
+  dplyr::bind_rows(prepared_data_steel)
 
 prepared_data %>%
   dplyr::rename(ald_business_unit=.data$technology) %>%
