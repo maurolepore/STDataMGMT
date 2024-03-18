@@ -431,7 +431,7 @@ prepare_lc_adjusted_price_data_steel <- function(input_data,
     ) %>%
     dplyr::select(colnames(input_data))
   
-  prices_adjust <- prices_adjust %>%
+  prices_adjusted <- prices_adjusted %>%
     select(-source)
   
   return(prices_adjusted)

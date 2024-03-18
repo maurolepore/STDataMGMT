@@ -202,7 +202,7 @@ steel_lc_raw <- readr::read_delim(
   )
 )
 
-# processig raw data
+# processig raw Steel LC data
 steel_lc_data <- MP_LC_steel_wrangling(steel_lc_raw)
 
 #creating steel price data
@@ -227,6 +227,7 @@ price_data_long_adjusted <- price_data_long_adjusted_WEO2021 %>%
   dplyr::bind_rows(price_data_long_adjusted_NGFS2023) %>%
   dplyr::bind_rows(price_data_long_adjusted_IPR2023) %>%
   dplyr::bind_rows(price_data_long_adjusted_OXF2021) %>%
+  dplyr::bind_rows(price_data_long_adjusted_MP_Steel) %>%
   dplyr::bind_rows(auto_prices)
 
 price_data_long_adjusted %>%
