@@ -784,7 +784,7 @@ prepare_OXF_scenario_data <- function(data, start_year) {
 }
 
 ## Prepare Steel Scenario Data
-prepare_steel_scenario_data <- function(data, start_year) {
+prepare_steel_scenario_data <- function(data, start_year, max_year=2050) {
   
   data <- data %>%
     dplyr::rename(value = "Production (Mt)") %>% # renaming
@@ -796,7 +796,7 @@ prepare_steel_scenario_data <- function(data, start_year) {
     # Ensure the year column is treated as a numeric column
     dplyr::mutate(year = as.numeric(as.character(.data$year))) %>%
     # Complete missing combinations of scenario, technology, and year
-    tidyr::complete(.data$scenario, .data$technology, year = 2020:2050) %>%
+    tidyr::complete(.data$scenario, .data$technology, year = start_year:max_year) %>%
     # arrange the dataset for easier reading
     dplyr::arrange(.data$scenario, .data$technology, .data$year)
   
@@ -819,8 +819,8 @@ prepare_steel_scenario_data <- function(data, start_year) {
     # Duplicate each row 3 times, setting technology to EAF-BF, EAF-OHF, and EAF-MM for each duplicate
     tidyr::uncount(3) %>%
     dplyr::mutate(technology = dplyr::case_when(
-      row_number() %% 3 == 1 ~ "EAF-BF",
-      row_number() %% 3 == 2 ~ "EAF-OHF",
+      dplyr::row_number() %% 3 == 1 ~ "EAF-BF",
+      dplyr::row_number() %% 3 == 2 ~ "EAF-OHF",
       TRUE ~ "EAF-MM"
     )) %>%
     # Bind the modified rows back to the original dataset, excluding the original "EAF" rows

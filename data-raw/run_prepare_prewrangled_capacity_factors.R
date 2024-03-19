@@ -111,7 +111,7 @@ steel_cf <- readr::read_csv(
   )
 )
 
-prepared_data_steel <- prepare_capacity_factors_GEM_steel(steel_cf) 
+prepared_data_steel <- prepare_capacity_factors_GEM_steel(steel_cf, start_year=start_year) 
 
 ## combine and write data
 prepared_data <- prepared_data_WEO2021 %>%

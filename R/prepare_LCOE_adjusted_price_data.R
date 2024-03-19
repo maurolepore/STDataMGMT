@@ -366,8 +366,8 @@ MP_LC_steel_wrangling <- function(data) {
     # Duplicate each row 3 times, setting technology to EAF-BF, EAF-OHF, and EAF-MM for each duplicate
     tidyr::uncount(3) %>%
     dplyr::mutate(technology = dplyr::case_when(
-      row_number() %% 3 == 1 ~ "EAF-BF",
-      row_number() %% 3 == 2 ~ "EAF-OHF",
+      dplyr::row_number() %% 3 == 1 ~ "EAF-BF",
+      dplyr::row_number() %% 3 == 2 ~ "EAF-OHF",
       TRUE ~ "EAF-MM"
     )) %>%
     # Bind the modified rows back to the original dataset, excluding the original "EAF" rows

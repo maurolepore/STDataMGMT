@@ -565,7 +565,7 @@ prepare_capacity_factors_OXF2021 <- function(data) {
 
 
 ### Steel Capacity Factors
-prepare_capacity_factors_GEM_steel <- function(data){
+prepare_capacity_factors_GEM_steel <- function(data, start_year, max_year=2050){
   
   # adding scenario geography 
   data$scenario_geography <- "Global"
@@ -611,7 +611,7 @@ prepare_capacity_factors_GEM_steel <- function(data){
   # Expand dataset first without attempting to fill 'value'
   data <- data %>%
     dplyr::group_by(.data$technology, .data$scenario, .data$scenario_geography) %>%
-    tidyr::complete(year = 2021:2050) %>%
+    tidyr::complete(year = start_year:max_year) %>%
     dplyr::ungroup()
   
   # This step assumes uses the first non-NA 'value' for each 'technology', 'scenario', 'scenario_geography' combination
