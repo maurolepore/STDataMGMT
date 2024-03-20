@@ -21,6 +21,19 @@ read_asset_resolution <- function(path_ar_data_raw, sheet_name) {
       ald_location = .data$`Asset Country`,
       activity_unit = .data$`Activity Unit`
     )
+    
+    # hardcoded renaming for Steel sector
+    ar_data <- ar_data |>
+      dplyr::mutate(technology = dplyr::case_when(
+        technology == 'Basic Oxygen Furnace' & technology_type == 'Integrated Blast Furnace' ~ 'BOF-BF',
+        technology == 'Basic Oxygen Furnace' & technology_type == 'Integrated DRI Furnace' ~ 'BOF-DRI',
+        technology == 'Electric Arc Furnace' & technology_type == 'Integrated Blast Furnace' ~ 'EAF-BF',
+        technology == 'Electric Arc Furnace' & technology_type == 'Integrated DRI Furnace' ~ 'EAF-DRI',
+        technology == 'Electric Arc Furnace' & technology_type == 'Integrated Open Hearth Furnace' ~ 'EAF-OHF',
+        technology == 'Electric Arc Furnace' & technology_type == 'Mini-Mill' ~ 'EAF-MM',
+        TRUE ~ technology  # Default case to keep existing value
+      ))
+    
   } else if (sheet_name == "Company Information") {
     ar_data <- readxl::read_xlsx(path_ar_data_raw,
                                  sheet = sheet_name) %>%
@@ -34,6 +47,7 @@ read_asset_resolution <- function(path_ar_data_raw, sheet_name) {
   } else {
     stop("Sheet name not recognized")
   }
+
   return(ar_data)
 }
 

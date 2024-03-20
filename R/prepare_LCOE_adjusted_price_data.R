@@ -432,6 +432,15 @@ prepare_lc_adjusted_price_data_steel <- function(input_data,
   
   prices_adjusted <- prices_adjusted %>%
     dplyr::select(-.data$source)
+
+  prices_adjusted <- prices_adjusted %>%
+    dplyr::mutate(
+      scenario = dplyr::case_when(
+        (.data$sector == "Steel") & (.data$scenario == "baseline") ~ "Steel_baseline",
+        (.data$sector == "Steel") & (.data$scenario == "carbon_cost") ~ "Steel_NZ",
+        TRUE ~ scenario
+      )
+    )
   
   return(prices_adjusted)
 }
