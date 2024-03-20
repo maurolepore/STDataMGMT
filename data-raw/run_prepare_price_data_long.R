@@ -207,7 +207,7 @@ steel_lc_data <- MP_LC_steel_wrangling(steel_lc_raw)
 
 #creating steel price data
 #average steel npm (to be updated)
-steel_npm <- 0.08
+steel_npm <- 0.06866203
 
 price_data_long_adjusted_MP_Steel <- prepare_lc_adjusted_price_data_steel(input_data=steel_lc_data, average_npm_steel = steel_npm, start_year = start_year)
 
