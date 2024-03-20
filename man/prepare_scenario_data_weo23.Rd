@@ -7,6 +7,9 @@
 \usage{
 prepare_scenario_data_weo23(data)
 }
+\arguments{
+\item{data}{data}
+}
 \description{
 WEO2023 preparation
 2023 vintage has only global data
