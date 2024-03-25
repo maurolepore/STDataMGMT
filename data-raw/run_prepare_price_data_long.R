@@ -49,7 +49,7 @@ input_data_power <- readr::read_csv(
 )
 
 
-price_data_long_WEO2021 <- prepare_price_data_long_WEO(
+price_data_long_WEO2021 <- prepare_price_data_long_WEO2021(
   input_data_fossil_fuel = input_data_fossil_fuels,
   input_data_power = input_data_power
 )

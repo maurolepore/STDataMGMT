@@ -8,7 +8,7 @@
 #' @family data preparation functions
 #'
 #' @export
-prepare_price_data_long_WEO <- function(input_data_fossil_fuel,
+prepare_price_data_long_WEO2021 <- function(input_data_fossil_fuel,
                                             input_data_power) {
   # the WEO 2020 raw data has values for 2019, but not for 2020. So the first year
   # must be 2019, if data prior to 2025 (next value) are to be interpolated.
