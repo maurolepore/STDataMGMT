@@ -267,7 +267,7 @@ prepare_prewrangled_capacity_factors_WEO2023 <- function(data, start_year) {
   
   generation <- data %>%
     dplyr::filter(.data$indicator == "Electricity generation") %>%
-    dplyr::rename(generation = .datavalue)%>%
+    dplyr::rename(generation = .data$value)%>%
     dplyr::select(
       .data$source, .data$scenario, .data$scenario_geography, .data$sector,
       .data$technology, .data$year, .data$units, .data$generation

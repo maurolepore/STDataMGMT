@@ -257,6 +257,9 @@ prepare_scenario_data <- function(data) {
 #' Scenario processing for weo23
 #' This script takes preprocessed data from weo23 and wrangles it
 #' Only global data for now
+#' @param data data that contains the scenario data file that is to be
+#'   processed
+
 
 prepare_scenario_data_weo23 <- function(data) {
   data_has_expected_columns <- all(
