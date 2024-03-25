@@ -39,6 +39,35 @@ data <- readr::read_csv(
 ## prepare data
 prepared_data_WEO2021 <- prepare_prewrangled_capacity_factors_WEO2021(data, start_year = start_year)
 
+## WEO2023
+
+## read data
+input_path_weo23 <- fs::path(
+  "data-raw",
+  "capacity_factors_data",
+  "raw_capacity_factors_WEO2023.csv"
+)
+
+data_weo23 <- readr::read_csv(
+  input_path_weo23,
+  col_types = readr::cols(
+    source = "c",
+    scenario = "c",
+    scenario_geography = "c",
+    sector = "c",
+    indicator = "c",
+    technology = "c",
+    units = "c",
+    year = "d",
+    value = "d",
+    .default = readr::col_number()
+  )
+)
+
+## prepare data
+prepared_data_WEO2023 <- prepare_prewrangled_capacity_factors_WEO2023(data_weo23, start_year = start_year)
+
+
 ##NGFS--- read data
 input_path <- file.path("data-raw", "capacity_factors_data", "raw_capacity_factors_NGFSphase4.csv")
 
@@ -100,7 +129,8 @@ prepared_data_OXF2021 <- prepare_capacity_factors_OXF2021(prepared_data_WEO2021)
 prepared_data <- prepared_data_WEO2021 %>%
   dplyr::bind_rows(prepared_data_NGFS2023) %>%
   dplyr::bind_rows(prepared_data_IPR2023) %>%
-  dplyr::bind_rows(prepared_data_OXF2021)
+  dplyr::bind_rows(prepared_data_OXF2021) %>%
+  dplyr::bind_rows(prepared_data_WEO2023)
 
 prepared_data %>%
   dplyr::rename(ald_business_unit=.data$technology) %>%

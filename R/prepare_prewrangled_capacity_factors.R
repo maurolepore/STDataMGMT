@@ -239,6 +239,126 @@ prepare_prewrangled_capacity_factors_WEO2021 <- function(data, start_year) {
   capacity_factors
 }
 
+#' WEO2023
+#' This function reads prewrangled weo2023 capacity and net generation data for APS, STEPS and NZ scenarios
+#' under the Global geography
+prepare_prewrangled_capacity_factors_WEO2023 <- function(data, start_year) {
+  
+  hours_to_year <- 24 * 365
+  end_year = 2050
+  
+  data <- data %>%
+    dplyr::filter(
+      .data$sector == "Power"
+    )
+  
+  capacity <- data %>%
+    dplyr::filter(indicator == "Capacity") %>%
+    dplyr::rename(capacity = value)%>%
+    dplyr::select(
+      .data$source, .data$scenario, .data$scenario_geography, .data$sector,
+      .data$technology, .data$year, .data$units, .data$capacity
+    )
+  
+  generation <- data %>%
+    dplyr::filter(.data$indicator == "Electricity generation") %>%
+    dplyr::rename(generation = value)%>%
+    dplyr::select(
+      .data$source, .data$scenario, .data$scenario_geography, .data$sector,
+      .data$technology, .data$year, .data$units, .data$generation
+    ) %>%
+    dplyr::mutate(
+      generation = .data$generation * 1000 / .env$hours_to_year,
+      units = "GW"
+    )
+  
+  capacity_factors <- generation %>%
+    dplyr::inner_join(
+      capacity,
+      by = c(
+        "source", "scenario", "scenario_geography", "sector", "technology", "units", "year"
+      )
+    ) %>%
+    dplyr::distinct_all() %>%
+    tidyr::complete(
+      year = seq(.env$start_year, .env$end_year),
+      tidyr::nesting(
+        !!!rlang::syms(
+          c("source", "scenario", "scenario_geography", "sector", "technology", "units")
+        )
+      )
+    ) %>%
+    dplyr::arrange(
+      .data$source, .data$scenario, .data$scenario_geography, .data$sector,
+      .data$technology, .data$units, .data$year
+    ) %>%
+    dplyr::group_by(
+      .data$source, .data$scenario, .data$scenario_geography, .data$sector,
+      .data$technology, .data$units
+    ) %>%
+    dplyr::mutate(
+      # interpolate missing values using linear interpolation to avoid problems
+      # with unrealistic lower/upper bounds
+      capacity = zoo::na.approx(object = .data$capacity),
+      generation = zoo::na.approx(object = .data$generation)
+    ) %>%
+    dplyr::ungroup() %>%
+    dplyr::filter(.data$year >= .env$start_year)
+  
+  capacity_factors <- capacity_factors %>%
+    dplyr::mutate(capacity_factor = .data$generation / .data$capacity) %>%
+    # if both capacity and generation are 0, we get capacity factor NaN. Until
+    # we have clarity on how to best handle this, we assume capacity factor 0
+    # in such a a case
+    dplyr::mutate(
+      capacity_factor = dplyr::if_else(
+        is.na(.data$capacity_factor),
+        0,
+        .data$capacity_factor
+      )
+    )
+  
+  capacity_factors_has_nas <- any(is.na(capacity_factors$capacity_factor))
+  if (capacity_factors_has_nas) {
+    stop("Data must not contain capacity factors with NA values.", call. = FALSE)
+  }
+  
+  capacity_factors_out_of_bounds <- min(
+    capacity_factors$capacity_factor,
+    na.rm = TRUE
+  ) < 0 |
+    max(capacity_factors$capacity_factor, na.rm = TRUE) > 1
+  if (capacity_factors_out_of_bounds) {
+    stop(
+      "Capacity factors with values below 0 or greater than 1 in data. This is
+      not logically possible. Please check input data and fix.",
+      call. = FALSE
+    )
+  }
+  
+  capacity_factors <- capacity_factors %>%
+    dplyr::select(
+      .data$scenario, .data$scenario_geography, .data$technology, .data$year,
+      .data$capacity_factor
+    )
+  
+  output_has_expected_columns <- all(
+    c(
+      "scenario", "scenario_geography", "technology", "year", "capacity_factor"
+    ) %in% colnames(capacity_factors)
+  )
+  stopifnot(output_has_expected_columns)
+  
+  capacity_factors <- capacity_factors %>%
+    dplyr::mutate(ald_sector = "Power") %>%
+    # Power is the only currently included sector
+    remove_incomplete_sectors() %>%
+    dplyr::select(-.data$ald_sector) %>%
+    dplyr::mutate(scenario = paste("WEO2023", .data$scenario, sep = "_"))
+  
+  capacity_factors
+}
+
 
 #' This function reads in raw ngfs capacity and secondary energy data, as found in the dropbox
 #' under "Raw Data" and creates capacity factors for the power sector.
