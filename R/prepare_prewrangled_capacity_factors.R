@@ -242,6 +242,11 @@ prepare_prewrangled_capacity_factors_WEO2021 <- function(data, start_year) {
 #' WEO2023
 #' This function reads prewrangled weo2023 capacity and net generation data for APS, STEPS and NZ scenarios
 #' under the Global geography
+#' @param data A dataframe containing the preprocessed data that needs to be wrangled.
+#'             Expected to have columns for sector, indicator, value, source,
+#'             scenario, scenario_geography, technology, year, and units.
+#' @param start_year The starting year from which capacity factors should be calculated.
+
 prepare_prewrangled_capacity_factors_WEO2023 <- function(data, start_year) {
   
   hours_to_year <- 24 * 365
@@ -253,8 +258,8 @@ prepare_prewrangled_capacity_factors_WEO2023 <- function(data, start_year) {
     )
   
   capacity <- data %>%
-    dplyr::filter(indicator == "Capacity") %>%
-    dplyr::rename(capacity = value)%>%
+    dplyr::filter(.data$indicator == "Capacity") %>%
+    dplyr::rename(capacity = .data$value)%>%
     dplyr::select(
       .data$source, .data$scenario, .data$scenario_geography, .data$sector,
       .data$technology, .data$year, .data$units, .data$capacity
@@ -262,7 +267,7 @@ prepare_prewrangled_capacity_factors_WEO2023 <- function(data, start_year) {
   
   generation <- data %>%
     dplyr::filter(.data$indicator == "Electricity generation") %>%
-    dplyr::rename(generation = value)%>%
+    dplyr::rename(generation = .datavalue)%>%
     dplyr::select(
       .data$source, .data$scenario, .data$scenario_geography, .data$sector,
       .data$technology, .data$year, .data$units, .data$generation
