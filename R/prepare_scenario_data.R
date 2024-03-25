@@ -254,6 +254,67 @@ prepare_scenario_data <- function(data) {
   return(data)
 }
 
+#' Scenario processing for weo23
+#' This script takes preprocessed data from weo23 and wrangles it
+#' Only global data for now
+
+prepare_scenario_data_weo23 <- function(data) {
+  data_has_expected_columns <- all(
+    c(
+      "Source", "Technology", "ScenarioGeography", "Sector", "Units",
+      "Indicator", "Scenario", "Sub_Technology", "Year", "Direction", "mktFSRatio", "techFSRatio",
+      "FairSharePerc"
+    ) %in% colnames(data)
+  )
+  
+  stopifnot(data_has_expected_columns)
+  
+  # due to inconsistencies in the raw data across sources, we need to filter for
+  # other Indicators in IEA scenarios than in GECO scenarios at least up until
+  # WEO 2021 and GECO 2021. Please review once new scenarios are available
+  data <- data %>%
+    dplyr::filter(
+      !(.data$Technology == "RenewablesCap" & !is.na(.data$Sub_Technology)) # THIS NEEDS TO BE INVESTIGATED AS SUBTECHNOLOGIES CURRENTLY ALWAYS EMPTY
+    ) %>%
+    dplyr::select(
+      -c(
+        .data$Sub_Technology, .data$Indicator, .data$mktFSRatio, .data$techFSRatio
+      )
+    ) %>%
+    dplyr::rename(
+      scenario_source = .data$Source,
+      scenario_geography = .data$ScenarioGeography,
+      scenario = .data$Scenario,
+      ald_sector = .data$Sector,
+      units = .data$Units,
+      technology = .data$Technology,
+      year = .data$Year,
+      direction = .data$Direction,
+      fair_share_perc = .data$FairSharePerc
+    ) %>%
+    dplyr::relocate(
+      .data$scenario_source, .data$scenario_geography, .data$scenario,
+      .data$ald_sector, .data$units, .data$technology, .data$year,
+      .data$direction, .data$fair_share_perc
+    ) %>%
+    dplyr::mutate(
+      scenario = stringr::str_c(.data$scenario_source, .data$scenario, sep = "_")
+    ) %>%
+    dplyr::distinct_all()
+  
+  # removing sectors that are not supported by stress testing
+  p4i_p4b_sector_technology_lookup_df <- p4i_p4b_sector_technology_lookup()
+  
+  data <- data %>%
+    dplyr::filter(.data$ald_sector %in% unique(p4i_p4b_sector_technology_lookup_df$sector_p4i))
+  
+  data <- remove_incomplete_sectors(data)
+  
+  data <- data %>%
+    dplyr::select(-.data$scenario_source)
+  
+  return(data)
+}
 
 
 #' This function reads  NGFS raw scenario data as found in the dropbox

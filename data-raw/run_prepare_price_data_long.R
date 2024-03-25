@@ -106,7 +106,7 @@ input_data_power_weo23 <- readr::read_csv(
 )
 
 ## price data wrangling and adjustment (uses the same function as WEO2021)
-price_data_long_WEO2023 <- prepare_price_data_long_WEO(
+price_data_long_WEO2023 <- prepare_price_data_long_WEO2021(
   input_data_fossil_fuel = input_data_fossil_fuels_weo23,
   input_data_power = input_data_power_weo23
 )

@@ -98,7 +98,7 @@ input_path_weo23 <- fs::path(
 )
 
 weo23_data <- readr::read_csv(
-  input_path,
+  input_path_weo23,
   col_types = readr::cols_only(
     source = "c",
     scenario = "c",
@@ -120,6 +120,7 @@ weo23_data <- weo23_data %>%
 weo23_data <- weo23_data %>%
   format_p4i(green_techs)
 
+prepared_data_weo23 <- prepare_scenario_data_weo23(data = weo23_data)
 
 
 #NGFS Phase IV
@@ -236,10 +237,12 @@ prepared_OXF_data <- prepare_OXF_scenario_data(OXF,
 prepared_data_IEA_NGFS <- dplyr::full_join(prepared_data, preprepared_ngfs_data)
 prepared_data_IPR_OXF <- dplyr::full_join(prepared_IPR_data, prepared_OXF_data)
 prepared_data_combined <- dplyr::full_join(prepared_data_IEA_NGFS, prepared_data_IPR_OXF)
+prepared_data_combined <- dplyr::full_join(prepared_data_combined, prepared_data_weo23)
 
 
 baseline_scenarios <- c(
   "WEO2021_STEPS",
+  "WEO2023_STEPS",
   "GECO2021_CurPol",
   "WEO2021_APS",
   "NGFS2023GCAM_CP",
@@ -258,6 +261,8 @@ baseline_scenarios <- c(
 shock_scenarios <- c(
     "WEO2021_SDS",
     "WEO2021_NZE_2050",
+    "WEO2023_APS",
+    "WEO2023_NZE_2050",
     "GECO2021_1.5C-Unif",
     "GECO2021_NDC-LTS",
     "NGFS2023GCAM_B2DS",
