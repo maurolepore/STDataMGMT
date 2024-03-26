@@ -126,43 +126,6 @@ weo23_data <- weo23_data %>%
 
 prepared_data_weo23 <- prepare_scenario_data_weo23(data = weo23_data)
 
-
-# WEO 2023 Global
-# Only Global for now, due to data availability issues
-
-#Preprocessed WEO data
-input_path_weo23 <- fs::path(
-  "data-raw",
-  "scenario_analysis_input_data",
-  "weo23_Scenarios_AnalysisInput.csv"
-)
-
-weo23_data <- readr::read_csv(
-  input_path_weo23,
-  col_types = readr::cols_only(
-    source = "c",
-    scenario = "c",
-    scenario_geography = "c",
-    sector = "c",
-    technology = "c",
-    units = "c",
-    indicator = "c",
-    year = "d",
-    value = "d"
-  )
-)
-
-
-weo23_data  <- weo23_data %>%
-  interpolate_yearly(!!!rlang::syms(interpolation_groups)) %>%
-  dplyr::filter(year >= start_year) %>%
-  add_market_share_columns(start_year = start_year)
-
-weo23_data <- weo23_data %>%
-  format_p4i(green_techs)
-
-prepared_data_weo23 <- prepare_scenario_data_weo23(data = weo23_data)
-
 ## GECO2023 (only Automotive)
 
 input_path <- fs::path(
