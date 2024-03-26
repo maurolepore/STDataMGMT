@@ -29,6 +29,7 @@ add_technology_fair_share_ratio <- function(data) {
 }
 
 add_market_fair_share_percentage <- function(data) {
+  browser()
   data %>%
     dplyr::ungroup() %>%
     dplyr::group_by(!!!rlang::syms(c(common_fs_groups(), "year"))) %>%
@@ -62,6 +63,7 @@ common_fs_groups <- function() {
 #'
 #' @export
 add_market_share_columns <- function(data, start_year) {
+  browser()
   old_groups <- dplyr::groups(data)
   data <- dplyr::ungroup(data)
 
@@ -271,6 +273,12 @@ prepare_scenario_data_weo23 <- function(data) {
   )
   
   stopifnot(data_has_expected_columns)
+  
+  ##removing Net Generation as we use this only for Capacity Factors
+  data <- data %>%
+    dplyr::filter(
+      !(.data$Indicator =="Electricity generation")
+    )
   
   # due to inconsistencies in the raw data across sources, we need to filter for
   # other Indicators in IEA scenarios than in GECO scenarios at least up until
