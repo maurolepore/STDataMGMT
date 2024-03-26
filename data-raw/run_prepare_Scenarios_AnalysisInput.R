@@ -112,7 +112,8 @@ weo23_data <- readr::read_csv(
   )
 )
 
-weo23_data <- weo23_data %>%
+
+weo23_data  <- weo23_data %>%
   interpolate_yearly(!!!rlang::syms(interpolation_groups)) %>%
   dplyr::filter(year >= start_year) %>%
   add_market_share_columns(start_year = start_year)

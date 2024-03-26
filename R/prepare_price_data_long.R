@@ -57,6 +57,7 @@ prepare_price_data_long_WEO2021 <- function(input_data_fossil_fuel,
     dplyr::mutate(
       technology = dplyr::case_when(
         .data$technology == "Crude oil" ~ "Oil",
+        .data$technology == "IEA crude oil" ~ "Oil",
         .data$technology == "Natural gas" ~ "Gas",
         TRUE ~ .data$technology
       )
