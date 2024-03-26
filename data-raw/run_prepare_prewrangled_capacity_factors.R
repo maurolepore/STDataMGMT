@@ -126,11 +126,28 @@ prepared_data_IPR2023 <- dplyr::full_join(prepared_data_IPR2023, IPR_baseline)
 
 prepared_data_OXF2021 <- prepare_capacity_factors_OXF2021(prepared_data_WEO2021)
 
+## Steel Capacity Factors - GEM
+input_path_steel <- file.path("data-raw", "capacity_factors_data", "preprocessed_capacity_factors_GEM_Steel.csv")
+
+# Steel CF based on the GEM database for 2021 capacity and production of steel
+steel_cf <- readr::read_csv(
+  input_path_steel,
+  col_types = readr::cols(
+    year = "d",
+    technology = "c",
+    value = "d",
+    .default = readr::col_number()
+  )
+)
+
+prepared_data_steel <- prepare_capacity_factors_GEM_steel(steel_cf, start_year=start_year) 
+
 ## combine and write data
 prepared_data <- prepared_data_WEO2021 %>%
   dplyr::bind_rows(prepared_data_NGFS2023) %>%
   dplyr::bind_rows(prepared_data_IPR2023) %>%
   dplyr::bind_rows(prepared_data_OXF2021) %>%
+  dplyr::bind_rows(prepared_data_steel) %>%
   dplyr::bind_rows(prepared_data_WEO2023)
 
 prepared_data %>%

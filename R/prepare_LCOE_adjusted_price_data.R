@@ -327,3 +327,121 @@ prepare_lcoe_adjusted_price_data_IPR2023 <- function(input_data,
 
   return(prices_adjusted)
 }
+
+# Steel Sector: MP adjustments
+# Function #1: wrangles the raw LC data into the correct format
+MP_LC_steel_wrangling <- function(data) {
+  
+  # creating global aggregate
+  global_aggregate <- data %>%
+    dplyr::group_by(.data$scenario, .data$year, .data$technology) %>%
+    dplyr::summarise(levelized_cost = mean(.data$levelized_cost, na.rm = TRUE), .groups = 'drop') %>%
+    dplyr::mutate(region = 'Global')
+  
+  # Append the new 'Global' region rows to the original dataset
+  data <- rbind(data, global_aggregate)
+  
+  # Rename columns in LC data
+  data <- data %>%
+    dplyr::rename(price = .data$levelized_cost, scenario_geography = .data$region)
+  
+  
+  data <- data %>%
+    dplyr::filter(.data$technology %in% c('Avg BF-BOF', 'DRI-Melt-BOF', 'EAF', 'DRI-EAF'))%>% # selecting relevant technologies
+    dplyr::filter(.data$scenario %in% c('baseline', 'carbon_cost')) # selecting relevant scenarios
+  
+  # renaming technologies
+  data <- data %>%
+    dplyr::mutate(technology = dplyr::case_when(
+      .data$technology == "Avg BF-BOF" ~ "BOF-BF",
+      .data$technology == "DRI-Melt-BOF" ~ "BOF-DRI",
+      .data$technology == "DRI-EAF" ~ "EAF-DRI",
+      TRUE ~ technology
+    ))
+  
+  # duplicate rows for "EAF" and rename the technology accordingly
+  data <- data %>%
+    # Identify rows with "EAF" technology
+    dplyr::filter(.data$technology == "EAF") %>%
+    # Duplicate each row 3 times, setting technology to EAF-BF, EAF-OHF, and EAF-MM for each duplicate
+    tidyr::uncount(3) %>%
+    dplyr::mutate(technology = dplyr::case_when(
+      dplyr::row_number() %% 3 == 1 ~ "EAF-BF",
+      dplyr::row_number() %% 3 == 2 ~ "EAF-OHF",
+      TRUE ~ "EAF-MM"
+    )) %>%
+    # Bind the modified rows back to the original dataset, excluding the original "EAF" rows
+    dplyr::bind_rows(data %>% dplyr::filter(.data$technology != "EAF"))
+  
+  # adding columns
+  data$sector <- "Steel"
+  data$indicator <- "Levelized Cost"
+  data$unit <- "Levelized Cost"
+  data$source <- "Mission Possible"
+  data$unit <- "$/ton" # see github documentation of steel model from MP
+  
+  return(data)
+}
+
+# Function #2: Generated the steel price data
+# We use the same approach as for the Power sector
+prepare_lc_adjusted_price_data_steel <- function(input_data,
+                                                 average_npm_steel,
+                                                 start_year) {
+  unadjusted_price_data <- input_data %>%
+    dplyr::filter(.data$year >= start_year)
+  
+  prices_with_lc <- unadjusted_price_data %>%
+    dplyr::filter(.data$sector == "Steel", .data$indicator == "Levelized Cost")
+  
+  implied_price <- prices_with_lc %>%
+    dplyr::filter(.data$year == .env$start_year) %>%
+    dplyr::mutate(implied_price = .data$price / (1 - .env$average_npm_steel)) %>%
+    dplyr::mutate(absolute_npm = .data$implied_price - .data$price) %>%
+    dplyr::select(
+      c(
+        .data$source, .data$scenario, .data$scenario_geography, .data$sector,
+        .data$technology, .data$unit, .data$implied_price, .data$absolute_npm
+      )
+    )
+  
+  prices_with_lc <- prices_with_lc %>%
+    dplyr::group_by(
+      .data$source, .data$scenario, .data$scenario_geography, .data$sector,
+      .data$technology, .data$indicator, .data$unit
+    ) %>%
+    dplyr::arrange(
+      .data$source, .data$scenario, .data$scenario_geography, .data$sector,
+      .data$technology, .data$indicator, .data$unit, .data$year
+    ) %>%
+    dplyr::mutate(cost_factor = dplyr::first(.data$price) / .data$price) %>%
+    dplyr::ungroup()
+  
+  implied_price_over_time <- prices_with_lc %>%
+    dplyr::inner_join(
+      implied_price,
+      by = c("source", "scenario", "scenario_geography", "sector", "technology", "unit")
+    )
+  
+  prices_adjusted <- implied_price_over_time %>%
+    dplyr::mutate(
+      price = .data$implied_price * .data$cost_factor,
+      indicator = "price"
+    ) %>%
+    dplyr::select(colnames(input_data))
+  
+  prices_adjusted <- prices_adjusted %>%
+    dplyr::select(-.data$source)
+
+  prices_adjusted <- prices_adjusted %>%
+    dplyr::mutate(
+      scenario = dplyr::case_when(
+        (.data$sector == "Steel") & (.data$scenario == "baseline") ~ "Steel_baseline",
+        (.data$sector == "Steel") & (.data$scenario == "carbon_cost") ~ "Steel_NZ",
+        TRUE ~ scenario
+      )
+    )
+  
+  return(prices_adjusted)
+}
+

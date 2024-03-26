@@ -2,18 +2,15 @@
 % Please edit documentation in R/prepare_scenario_data.R
 \name{prepare_scenario_data_weo23}
 \alias{prepare_scenario_data_weo23}
-\title{Scenario processing for weo23
-This script takes preprocessed data from weo23 and wrangles it
-Only global data for now}
+\title{WEO2023 preparation
+2023 vintage has only global data}
 \usage{
 prepare_scenario_data_weo23(data)
 }
 \arguments{
-\item{data}{data that contains the scenario data file that is to be
-processed}
+\item{data}{data}
 }
 \description{
-Scenario processing for weo23
-This script takes preprocessed data from weo23 and wrangles it
-Only global data for now
+WEO2023 preparation
+2023 vintage has only global data
 }
