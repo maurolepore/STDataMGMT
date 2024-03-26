@@ -81,7 +81,7 @@ output_path_stress_test_input <-
 # start_year <- 2022 # defined in workflow.R
 time_horizon <- 5
 additional_year <- NULL
-sector_list <- c("Automotive", "Power", "Oil&Gas", "Coal")
+sector_list <- c("Automotive", "Power", "Oil&Gas", "Coal", "Steel")
 km_per_vehicle <- 15000
 # parameters ========================================
 

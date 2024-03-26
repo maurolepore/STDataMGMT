@@ -123,13 +123,6 @@ for (i in 1:nrow(scenario_geography_x_ald_sector)) {
     )
 }
 
-WEO2021_SDS
-
-EmergingMarketAndDevelopingEconomies
- Non-OECD 
- LatinAmerica
- EU27
- SoutheastAsia
 # ===== SAVE TO DROPBOX
 
 

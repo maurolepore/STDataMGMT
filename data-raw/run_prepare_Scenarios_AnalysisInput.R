@@ -89,6 +89,43 @@ interpolation_groups <- c(
 
 prepared_data <- prepare_scenario_data(data = weo_geco_data)
 
+
+# WEO 2023 Global
+# Only Global for now, due to data availability issues
+
+#Preprocessed WEO data
+input_path_weo23 <- fs::path(
+  "data-raw",
+  "scenario_analysis_input_data",
+  "weo23_Scenarios_AnalysisInput.csv"
+)
+
+weo23_data <- readr::read_csv(
+  input_path_weo23,
+  col_types = readr::cols_only(
+    source = "c",
+    scenario = "c",
+    scenario_geography = "c",
+    sector = "c",
+    technology = "c",
+    units = "c",
+    indicator = "c",
+    year = "d",
+    value = "d"
+  )
+)
+
+
+weo23_data  <- weo23_data %>%
+  interpolate_yearly(!!!rlang::syms(interpolation_groups)) %>%
+  dplyr::filter(year >= start_year) %>%
+  add_market_share_columns(start_year = start_year)
+
+weo23_data <- weo23_data %>%
+  format_p4i(green_techs)
+
+prepared_data_weo23 <- prepare_scenario_data_weo23(data = weo23_data)
+
 ## GECO2023 (only Automotive)
 
 input_path <- fs::path(
@@ -249,15 +286,40 @@ OXF <- as.data.frame(readr::read_csv(
 prepared_OXF_data <- prepare_OXF_scenario_data(OXF,
                                                start_year = start_year)
 
+
+## Mission Possible Steel Scenarios
+
+input_path_steel <- fs::path(
+  "data-raw",
+  "scenario_analysis_input_data",
+  "MP_steel_Scenario_Analysis_Input.csv"
+)
+
+STEEL <- as.data.frame(readr::read_csv(
+  input_path_steel,
+  col_types = readr::cols_only(
+    scenario = "c",
+    technology = "c",
+    year = "d",
+    "Production (Mt)" = "d"
+  )
+))
+
+prepared_steel_data <- prepare_steel_scenario_data(STEEL, start_year = start_year)
+
+
 ### Merge Data from Scenario Sources
 prepared_data_IEA_NGFS <- dplyr::full_join(prepared_data, preprepared_ngfs_data)
 prepared_data_IPR_OXF <- dplyr::full_join(prepared_IPR_data, prepared_OXF_data)
 prepared_data_combined <- dplyr::full_join(prepared_data_IEA_NGFS, prepared_data_IPR_OXF)
 prepared_data_combined <- dplyr::full_join(prepared_data_combined, prepared_geco23_data)
+prepared_data_combined <- dplyr::full_join(prepared_data_combined, prepared_steel_data)
+prepared_data_combined <- dplyr::full_join(prepared_data_combined, prepared_data_weo23)
 
 
 baseline_scenarios <- c(
   "WEO2021_STEPS",
+  "WEO2023_STEPS",
   "GECO2021_CurPol",
   "GECO2023_CurPol",
   "WEO2021_APS",
@@ -272,11 +334,14 @@ baseline_scenarios <- c(
   "NGFS2023GCAM_NDC",
   "IPR2023_baseline",
   "IPR2023Automotive_baseline",
-  "Oxford2021_base"
+  "Oxford2021_base",
+  "Steel_baseline"
 )
 shock_scenarios <- c(
     "WEO2021_SDS",
     "WEO2021_NZE_2050",
+    "WEO2023_APS",
+    "WEO2023_NZE_2050",
     "GECO2021_1.5C-Unif",
     "GECO2021_NDC-LTS",
     "GECO2023_1.5C",
@@ -295,7 +360,8 @@ shock_scenarios <- c(
     "NGFS2023REMIND_NZ2050",
     "IPR2023_FPS",
     "IPR2023Automotive_FPS",
-    "Oxford2021_fast"
+    "Oxford2021_fast",
+    "Steel_NZ"
 )
 
 prepared_data_combined <- prepared_data_combined %>%

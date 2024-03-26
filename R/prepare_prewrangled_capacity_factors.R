@@ -239,6 +239,131 @@ prepare_prewrangled_capacity_factors_WEO2021 <- function(data, start_year) {
   capacity_factors
 }
 
+#' WEO2023
+#' This function reads prewrangled weo2023 capacity and net generation data for APS, STEPS and NZ scenarios
+#' under the Global geography
+#' @param data A dataframe containing the preprocessed data that needs to be wrangled.
+#'             Expected to have columns for sector, indicator, value, source,
+#'             scenario, scenario_geography, technology, year, and units.
+#' @param start_year The starting year from which capacity factors should be calculated.
+
+prepare_prewrangled_capacity_factors_WEO2023 <- function(data, start_year) {
+  
+  hours_to_year <- 24 * 365
+  end_year = 2050
+  
+  data <- data %>%
+    dplyr::filter(
+      .data$sector == "Power"
+    )
+  
+  capacity <- data %>%
+    dplyr::filter(.data$indicator == "Capacity") %>%
+    dplyr::rename(capacity = .data$value)%>%
+    dplyr::select(
+      .data$source, .data$scenario, .data$scenario_geography, .data$sector,
+      .data$technology, .data$year, .data$units, .data$capacity
+    )
+  
+  generation <- data %>%
+    dplyr::filter(.data$indicator == "Electricity generation") %>%
+    dplyr::rename(generation = .data$value)%>%
+    dplyr::select(
+      .data$source, .data$scenario, .data$scenario_geography, .data$sector,
+      .data$technology, .data$year, .data$units, .data$generation
+    ) %>%
+    dplyr::mutate(
+      generation = .data$generation * 1000 / .env$hours_to_year,
+      units = "GW"
+    )
+  
+  capacity_factors <- generation %>%
+    dplyr::inner_join(
+      capacity,
+      by = c(
+        "source", "scenario", "scenario_geography", "sector", "technology", "units", "year"
+      )
+    ) %>%
+    dplyr::distinct_all() %>%
+    tidyr::complete(
+      year = seq(.env$start_year, .env$end_year),
+      tidyr::nesting(
+        !!!rlang::syms(
+          c("source", "scenario", "scenario_geography", "sector", "technology", "units")
+        )
+      )
+    ) %>%
+    dplyr::arrange(
+      .data$source, .data$scenario, .data$scenario_geography, .data$sector,
+      .data$technology, .data$units, .data$year
+    ) %>%
+    dplyr::group_by(
+      .data$source, .data$scenario, .data$scenario_geography, .data$sector,
+      .data$technology, .data$units
+    ) %>%
+    dplyr::mutate(
+      # interpolate missing values using linear interpolation to avoid problems
+      # with unrealistic lower/upper bounds
+      capacity = zoo::na.approx(object = .data$capacity),
+      generation = zoo::na.approx(object = .data$generation)
+    ) %>%
+    dplyr::ungroup() %>%
+    dplyr::filter(.data$year >= .env$start_year)
+  
+  capacity_factors <- capacity_factors %>%
+    dplyr::mutate(capacity_factor = .data$generation / .data$capacity) %>%
+    # if both capacity and generation are 0, we get capacity factor NaN. Until
+    # we have clarity on how to best handle this, we assume capacity factor 0
+    # in such a a case
+    dplyr::mutate(
+      capacity_factor = dplyr::if_else(
+        is.na(.data$capacity_factor),
+        0,
+        .data$capacity_factor
+      )
+    )
+  
+  capacity_factors_has_nas <- any(is.na(capacity_factors$capacity_factor))
+  if (capacity_factors_has_nas) {
+    stop("Data must not contain capacity factors with NA values.", call. = FALSE)
+  }
+  
+  capacity_factors_out_of_bounds <- min(
+    capacity_factors$capacity_factor,
+    na.rm = TRUE
+  ) < 0 |
+    max(capacity_factors$capacity_factor, na.rm = TRUE) > 1
+  if (capacity_factors_out_of_bounds) {
+    stop(
+      "Capacity factors with values below 0 or greater than 1 in data. This is
+      not logically possible. Please check input data and fix.",
+      call. = FALSE
+    )
+  }
+  
+  capacity_factors <- capacity_factors %>%
+    dplyr::select(
+      .data$scenario, .data$scenario_geography, .data$technology, .data$year,
+      .data$capacity_factor
+    )
+  
+  output_has_expected_columns <- all(
+    c(
+      "scenario", "scenario_geography", "technology", "year", "capacity_factor"
+    ) %in% colnames(capacity_factors)
+  )
+  stopifnot(output_has_expected_columns)
+  
+  capacity_factors <- capacity_factors %>%
+    dplyr::mutate(ald_sector = "Power") %>%
+    # Power is the only currently included sector
+    remove_incomplete_sectors() %>%
+    dplyr::select(-.data$ald_sector) %>%
+    dplyr::mutate(scenario = paste("WEO2023", .data$scenario, sep = "_"))
+  
+  capacity_factors
+}
+
 
 #' This function reads in raw ngfs capacity and secondary energy data, as found in the dropbox
 #' under "Raw Data" and creates capacity factors for the power sector.
@@ -561,4 +686,70 @@ prepare_capacity_factors_OXF2021 <- function(data) {
     }
   }
   return(data)
+}
+
+
+### Steel Capacity Factors
+prepare_capacity_factors_GEM_steel <- function(data, start_year, max_year=2050){
+  
+  # adding scenario geography 
+  data$scenario_geography <- "Global"
+  
+  # Renaming BOF Steel directly
+  data <- data %>%
+    dplyr::mutate(technology = dplyr::case_when(
+      .data$technology == "BOF Steel" ~ "BOF-BF",
+      TRUE ~ technology
+    ))
+  
+  # Step 2: Create duplicates for EAF Steel with three new names, and DRI with two new names
+  eaf_bf <- data %>%
+    dplyr::filter(.data$technology == "EAF Steel") %>%
+    dplyr::mutate(technology = "EAF-BF")
+  
+  eaf_ohf <- data %>%
+    dplyr::filter(.data$technology == "EAF Steel") %>%
+    dplyr::mutate(technology = "EAF-OHF")
+  
+  eaf_mm <- data %>%
+    dplyr::filter(.data$technology == "EAF Steel") %>%
+    dplyr::mutate(technology = "EAF-MM")
+  
+  bof_dri <- data %>%
+    dplyr::filter(.data$technology == "DRI") %>%
+    dplyr::mutate(technology = "BOF-DRI")
+  
+  eaf_dri <- data %>%
+    dplyr::filter(.data$technology == "DRI") %>%
+    dplyr::mutate(technology = "EAF-DRI")
+  
+  # Combining the new duplicated datasets back with the original, excluding original EAF Steel and DRI rows
+  data <- data %>%
+    dplyr::filter(!(.data$technology %in% c("EAF Steel", "DRI"))) %>%
+    dplyr::bind_rows(eaf_bf, eaf_ohf, eaf_mm, bof_dri, eaf_dri)
+  
+  # Step 3: Duplicate all observations for the scenario column
+  data <- data %>%
+    dplyr::mutate(scenario = "Steel_baseline") %>%
+    dplyr::bind_rows(dplyr::mutate(data, scenario = "Steel_NZ"))
+  
+  # Expand dataset first without attempting to fill 'value'
+  data <- data %>%
+    dplyr::group_by(.data$technology, .data$scenario, .data$scenario_geography) %>%
+    tidyr::complete(year = start_year:max_year) %>%
+    dplyr::ungroup()
+  
+  # This step assumes uses the first non-NA 'value' for each 'technology', 'scenario', 'scenario_geography' combination
+  data <- data %>%
+    dplyr::group_by(.data$technology, .data$scenario, .data$scenario_geography) %>%
+    dplyr::mutate(value = ifelse(is.na(.data$value), dplyr::first(.data$value[!is.na(.data$value)]), .data$value)) %>%
+    dplyr::ungroup()
+  
+  # filtering for only relevant technologies
+  data <- data %>%
+    dplyr::filter(.data$technology %in% c("BOF-BF", "BOF-DRI", "EAF-BF", "EAF-DRI", "EAF-OHF", "EAF-MM"))
+  
+  #renaming value column
+  data <- data %>%
+    dplyr:: rename(capacity_factor = .data$value)
 }

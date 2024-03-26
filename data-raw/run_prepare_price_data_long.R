@@ -63,6 +63,65 @@ price_data_long_adjusted_WEO2021 <- prepare_lcoe_adjusted_price_data_weo(
   dplyr::select(-.data$source)
 
 
+# prepare price data WEO 2023----
+
+## read input data 2023----
+## Fossil Fuel prices WEO2023
+input_path_fossil_fuels_weo23 <- fs::path(
+  "data-raw",
+  "price_data_long_data",
+  "raw_price_data_long_WEO2023_FF.csv"
+)
+
+input_data_fossil_fuels_weo23 <- readr::read_csv(
+  file.path(input_path_fossil_fuels_weo23),
+  col_types = readr::cols(
+    source = "c",
+    sector = "c",
+    unit = "c",
+    scenario_geography = "c",
+    scenario = "c",
+    .default = readr::col_number()
+  )
+)
+
+## Power LCOE WEO2023
+input_path_power_weo23 <- fs::path(
+  "data-raw",
+  "price_data_long_data",
+  "raw_price_data_long_WEO2023_power.csv"
+)
+
+input_data_power_weo23 <- readr::read_csv(
+  file.path(input_path_power_weo23),
+  col_types = readr::cols(
+    source = "c",
+    scenario = "c",
+    region = "c",
+    technology = "c",
+    indicator = "c",
+    unit = "c",
+    .default = readr::col_number()
+  )
+)
+
+## price data wrangling and adjustment (uses the same function as WEO2021)
+price_data_long_WEO2023 <- prepare_price_data_long_WEO2021(
+  input_data_fossil_fuel = input_data_fossil_fuels_weo23,
+  input_data_power = input_data_power_weo23
+)
+
+## LCOE adjustment
+
+price_data_long_adjusted_WEO2023 <- prepare_lcoe_adjusted_price_data_weo(
+  input_data = price_data_long_WEO2023,
+  average_npm_power = average_npm_power,
+  start_year = start_year
+) %>%
+  dplyr::mutate(scenario = paste("WEO2023", .data$scenario, sep = "_")) %>%
+  dplyr::select(-.data$source)
+
+
 # prepare price data NGFS2023----
 ## read input data
 input_path_fossil_fuels_ngfs <- file.path("data-raw", "price_data_long_data", "raw_price_data_long_NGFSphase4.csv")
@@ -185,6 +244,33 @@ price_data_long_adjusted_OXF2021 <- prepare_price_data_long_Oxf2021(input_data_f
 
 ### NOTE: Oxford power prices are already in the data through lcoe_adjusted_price_data_oxford2021_2022
 
+## Steel Price Data
+## For Steel prices, we transform LC values given by MP into prices.
+input_path_steel_LC <- file.path("data-raw", "price_data_long_data","raw_MP_LC_steel.csv")
+
+steel_lc_raw <- readr::read_delim(
+  input_path_steel_LC,
+  delim = ";",
+  col_types = readr::cols(
+    scenario = "c",
+    year = "d",
+    region = "c",
+    technology = "c",
+    levelized_cost = "d",
+    .default = readr::col_number()
+  )
+)
+
+# processig raw Steel LC data
+steel_lc_data <- MP_LC_steel_wrangling(steel_lc_raw)
+
+#creating steel price data
+#average steel npm (to be updated)
+steel_npm <- 0.06866203
+
+price_data_long_adjusted_MP_Steel <- prepare_lc_adjusted_price_data_steel(input_data=steel_lc_data, average_npm_steel = steel_npm, start_year = start_year)
+
+
 ## prepare price data Automotive
 
 # scenarios with automotive sector are identified in the scenario file
@@ -197,9 +283,11 @@ auto_prices <- create_automotive_prices(Scenarios_AnalysisInput)
 ## combine and write all price data----
 
 price_data_long_adjusted <- price_data_long_adjusted_WEO2021 %>%
+  dplyr::bind_rows(price_data_long_adjusted_WEO2023) %>%
   dplyr::bind_rows(price_data_long_adjusted_NGFS2023) %>%
   dplyr::bind_rows(price_data_long_adjusted_IPR2023) %>%
   dplyr::bind_rows(price_data_long_adjusted_OXF2021) %>%
+  dplyr::bind_rows(price_data_long_adjusted_MP_Steel) %>%
   dplyr::bind_rows(auto_prices)
 
 price_data_long_adjusted %>%
