@@ -26,6 +26,7 @@ knitr::opts_chunk$set(
   </span>
 </h1>
 
+The repository forms part of the LIFE STRESS project. The LIFE STRESS project has received funding from the LIFE Programme of the European Union. The contents of this publication are the sole responsibility of Theia Finance Labs and  do  not necessarily reflect  the  opinion  of the European Union. Project: 101074271 — LIFE21-GIC-DE-Stress. 
 
 The preprocessing functions included in this repo have for purpose to generate dataframes to use as an input of the climate stress testing tool TRISK available on this repository :
 
