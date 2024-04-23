@@ -343,7 +343,6 @@ at the (company_id, ald_sector, region) granularity level, aggregate
 those to the company level to be used in the stress test.
 
 
-
 ## Funding
 
 EU LIFE Project Grant
@@ -352,3 +351,4 @@ Co-funded by the European Union. Views and opinions expressed are however those 
 
 Scientific Transition Risk Exercises for Stress tests & Scenario Analysis has received funding from the European Union’s Life programme under Grant No. LIFE21-GIC-DE-Stress under the LIFE-2021-SAP-CLIMA funding call.
 
+![](data-raw/LifeLogo2.jpg)
