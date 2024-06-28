@@ -1,0 +1,66 @@
+---
+output: github_document
+---
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.path = "man/figures/README-",
+  out.width = "100%"
+)
+```
+
+# STDataMGMT
+
+<!-- badges: start -->
+<!-- badges: end -->
+
+The goal of STDataMGMT is to generate private data for the stress test.
+
+## Installation
+
+You can install the development version of STDataMGMT from [GitHub](https://github.com/) with:
+
+``` r
+# install.packages("pak")
+pak::pak("Theia-Finance-Labs/STDataMGMT")
+```
+
+## Example
+
+```{r example}
+library(STDataMGMT)
+library(tibble)
+
+# Some of the included dataset
+production_types
+
+scenarios_geographies
+
+synthetic_eikon_data
+```
+
+## Funding
+
+The repository forms part of the LIFE STRESS project. The LIFE STRESS project
+has received funding from the LIFE Programme of the European Union. The contents
+of this publication are the sole responsibility of Theia Finance Labs and do not
+necessarily reflect the opinion of the European Union. Project: 101074271 —
+LIFE21-GIC-DE-Stress.
+
+EU LIFE Project Grant
+
+Co-funded by the European Union. Views and opinions expressed are however those
+of the author(s) only and do not necessarily reflect those of the European Union
+or CINEA. Neither the European Union nor the granting authority can be held
+responsible for them.
+
+Scientific Transition Risk Exercises for Stress tests & Scenario Analysis has
+received funding from the European Union’s Life programme under Grant No.
+LIFE21-GIC-DE-Stress under the LIFE-2021-SAP-CLIMA funding call.
+
+<img src=data-raw/LifeLogo2.jpg width=150>
+
