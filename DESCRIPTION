@@ -13,7 +13,7 @@ Description: The goal of STDataMGMT is to provide the input data required
     be used to point the main stress testing code to, when said data needs
     to be loaded. This allows publishing the code containing 2DII's main
     climate stress testing methodology open source.
-License: file LICENSE
+License: GPL (>= 3)
 Depends: 
     R (>= 2.10)
 Imports: 
