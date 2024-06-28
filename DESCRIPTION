@@ -6,9 +6,8 @@ Authors@R:
            comment = c(ORCID = "YOUR-ORCID-ID"))
 Description: What the package does (one paragraph).
 License: file LICENSE
-Encoding: UTF-8
-Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.2.3
+Depends: 
+    R (>= 2.10)
 Imports: 
     assertr,
     countrycode,
@@ -30,7 +29,9 @@ Suggests:
     knitr,
     rmarkdown,
     testthat (>= 3.0.0)
+VignetteBuilder: 
+    knitr
+Encoding: UTF-8
 LazyData: true
-VignetteBuilder: knitr
-Depends: 
-    R (>= 2.10)
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.2.3
