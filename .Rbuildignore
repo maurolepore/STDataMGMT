@@ -16,3 +16,4 @@
 ^doc$
 ^Meta$
 ^vignettes/country_specific_dataprep.Rmd
+^outputs_structure\.dbml$
