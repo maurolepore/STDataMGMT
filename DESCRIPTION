@@ -4,7 +4,15 @@ Version: 0.0.0.9000
 Authors@R: 
     person("First", "Last", , "first.last@example.com", role = c("aut", "cre"),
            comment = c(ORCID = "YOUR-ORCID-ID"))
-Description: What the package does (one paragraph).
+Description: The goal of STDataMGMT is to provide the input data required
+    for the stress test that cannot be shared as part of a public
+    repository. The 2DII stress test needs several external data inputs
+    that usually require a license which prohibits redistributing the
+    data. 2DII does not have the right to publicly share that data though,
+    which is why this repository needs to stay private.The repository will
+    be used to point the main stress testing code to, when said data needs
+    to be loaded. This allows publishing the code containing 2DII's main
+    climate stress testing methodology open source.
 License: file LICENSE
 Depends: 
     R (>= 2.10)
