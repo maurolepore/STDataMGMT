@@ -46,7 +46,6 @@ vignettes/*.pdf
 Desktop.ini
 *.icloud
 .Rproj.user
-STDataMGMT.Rproj
 inst/doc
 data-raw/DBs
 data-raw/st_inputs/*.csv
