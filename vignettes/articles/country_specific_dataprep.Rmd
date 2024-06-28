@@ -1,10 +1,5 @@
 ---
 title: "country_specific_dataprep"
-output: rmarkdown::html_vignette
-vignette: >
-  %\VignetteIndexEntry{country_specific_dataprep}
-  %\VignetteEngine{knitr::rmarkdown}
-  %\VignetteEncoding{UTF-8}
 ---
 
 ```{r, include = FALSE}
@@ -308,4 +303,3 @@ saveWorkbook(wb, output_file_path, overwrite = TRUE)
 cat("Excel file with descriptive statistics saved to:", file_name, "\n")
 
 ```
-
