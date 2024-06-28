@@ -1,10 +1,5 @@
 ---
 title: "run_synthetic_workflow"
-output: rmarkdown::html_vignette
-vignette: >
-  %\VignetteIndexEntry{run_synthetic_workflow}
-  %\VignetteEngine{knitr::rmarkdown}
-  %\VignetteEncoding{UTF-8}
 ---
 
 ```{r, include = FALSE}
