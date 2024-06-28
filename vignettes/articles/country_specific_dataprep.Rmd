@@ -5,9 +5,12 @@ title: "country_specific_dataprep"
 ```{r, include = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
-  comment = "#>"
+  comment = "#>",
+  # FIXME: Needs ~/Dropbox (2° Investing)/ST_INPUTS/ST_INPUTS_PRODUCTION/AR-Company-Indicators_2022Q4.xlsx
+  eval = FALSE
 )
 ```
+
 
 ```{r setup}
 library(STDataMGMT)
@@ -22,6 +25,7 @@ country_focus <- "India"
 dir.create(output_dir, showWarnings = FALSE)
 # Asset Impact params
 
+# WARNING: This article isn't reproducible. You need this data.
 path_ar_data_raw <-
   r2dii.utils::path_dropbox_2dii(
     "ST_INPUTS",
