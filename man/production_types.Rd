@@ -18,4 +18,7 @@ production_types
 Used to generate company synthetic datasets
 TODO remove to be
 }
+\examples{
+production_types
+}
 \keyword{datasets}

@@ -18,4 +18,7 @@ synthetic_company_emissions
 GENERATE COMPANY EMISSIONS
 generated from company_activities
 }
+\examples{
+synthetic_company_emissions
+}
 \keyword{datasets}

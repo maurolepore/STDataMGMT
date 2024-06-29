@@ -16,4 +16,7 @@ scenarios_geographies
 \description{
 available geographies in the stress test
 }
+\examples{
+scenarios_geographies
+}
 \keyword{datasets}

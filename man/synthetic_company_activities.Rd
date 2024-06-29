@@ -16,4 +16,7 @@ synthetic_company_activities
 \description{
 GENERATE COMPANY ACTIVITY
 }
+\examples{
+synthetic_company_activities
+}
 \keyword{datasets}

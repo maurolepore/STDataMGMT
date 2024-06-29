@@ -16,4 +16,7 @@ synthetic_eikon_data
 \description{
 generated
 }
+\examples{
+synthetic_eikon_data
+}
 \keyword{datasets}
