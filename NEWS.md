@@ -2,6 +2,7 @@
 
 Developer oriented changes:
 
+* Add snapshot-tests for the structure of the example data.
 * Turn vignettes into articles (lighter weight, visible only online).
 * Use standard README and link to details in the old one.
 * Publish website.
