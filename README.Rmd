@@ -20,6 +20,18 @@ knitr::opts_chunk$set(
 
 The goal of STDataMGMT is to generate private data for the stress test.
 
+This repository is both an R package and a data-processing pipeline:
+
+* To learn about the package see its website. 
+* To learn about the data-processing pipeline see data-raw/
+
+```{r}
+list.files("data-raw")
+```
+
+
+
+
 ## Installation
 
 You can install the development version of STDataMGMT from [GitHub](https://github.com/) with:

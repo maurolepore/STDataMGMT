@@ -8,6 +8,35 @@
 
 The goal of STDataMGMT is to generate private data for the stress test.
 
+This repository is both an R package and a data-processing pipeline:
+
+- To learn about the package see its website.
+- To learn about the data-processing pipeline see data-raw/
+
+``` r
+list.files("data-raw")
+#>  [1] "bench_regions.csv"                                   
+#>  [2] "bench_regions.rds"                                   
+#>  [3] "capacity_factors_data"                               
+#>  [4] "countries_samplings"                                 
+#>  [5] "LifeLogo2.jpg"                                       
+#>  [6] "matchingregions.xlsx"                                
+#>  [7] "prep_datalake.R"                                     
+#>  [8] "price_data_long_data"                                
+#>  [9] "raw_ngfs_carbon_price.csv"                           
+#> [10] "run_prepare_abcd_stress_test_input.R"                
+#> [11] "run_prepare_ngfs_carbon_price.R"                     
+#> [12] "run_prepare_prewrangled_capacity_factors.R"          
+#> [13] "run_prepare_prewrangled_financial_data_stress_test.R"
+#> [14] "run_prepare_price_data_long.R"                       
+#> [15] "run_prepare_Scenarios_AnalysisInput.R"               
+#> [16] "run_rename_geographies.R"                            
+#> [17] "run_workflow.R"                                      
+#> [18] "sampling_scripts"                                    
+#> [19] "scenario_analysis_input_data"                        
+#> [20] "st_inputs"
+```
+
 ## Installation
 
 You can install the development version of STDataMGMT from
