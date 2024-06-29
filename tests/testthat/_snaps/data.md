@@ -1,4 +1,4 @@
-# the strucutre of the datasets remains the same
+# structure of the example datasets
 
     Code
       names(scenarios_geographies)
