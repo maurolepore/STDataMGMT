@@ -1,6 +1,6 @@
 Package: STDataMGMT
 Title: Generate Private Data the Stress Test
-Version: 0.0.0.9000
+Version: 0.0.0.9001
 Authors@R: c(
     person("Antonio", "Buller", , "antonio@2degrees-investing.org", role = c("aut", "cre")),
     person("Bertrand", "Gallice", , "bertrand@2degrees-investing.org", role = "aut")
