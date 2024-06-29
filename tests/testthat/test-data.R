@@ -1,4 +1,4 @@
-test_that("the strucutre of the datasets remains the same", {
+test_that("structure of the example datasets", {
   expect_snapshot(names(scenarios_geographies))
 
   expect_snapshot(lapply(scenarios_geographies, typeof))
