@@ -1,8 +1,10 @@
 Package: STDataMGMT
 Title: Generate Private Data the Stress Test
 Version: 0.0.0.9000
-Authors@R: 
-    person("Antonio", "Buller", , "antonio@2degrees-investing.org", role = c("aut", "cre"))
+Authors@R: c(
+    person("Antonio", "Buller", , "antonio@2degrees-investing.org", role = c("aut", "cre")),
+    person("Bertrand", "Gallice", , "bertrand@2degrees-investing.org", role = "aut")
+  )
 Description: The goal of STDataMGMT is to provide the input data required
     for the stress test that cannot be shared as part of a public
     repository. The 2DII stress test needs several external data inputs
@@ -13,6 +15,7 @@ Description: The goal of STDataMGMT is to provide the input data required
     to be loaded. This allows publishing the code containing 2DII's main
     climate stress testing methodology open source.
 License: GPL (>= 3)
+URL: https://maurolepore.github.io/STDataMGMT/
 Depends: 
     R (>= 2.10)
 Imports: 
@@ -42,4 +45,3 @@ Encoding: UTF-8
 LazyData: true
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.1
-URL: https://maurolepore.github.io/STDataMGMT/
