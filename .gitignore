@@ -55,3 +55,4 @@ data-raw/synthetic_inputs
 /Meta/
 data-raw/datalake_inputs/*
 data-raw/financial_data_oldinputs/*
+docs
